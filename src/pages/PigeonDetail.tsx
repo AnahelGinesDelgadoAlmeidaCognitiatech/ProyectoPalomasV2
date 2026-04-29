@@ -1,15 +1,21 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPigeon, pigeons } from "@/data/pigeons";
 import { PedigreeTree } from "@/components/PedigreeTree";
+import { db } from "@/lib/db";
 
 export default function PigeonDetail() {
   const { id } = useParams();
-  const pigeon = getPigeon(id);
+  const pigeon = useLiveQuery(() => (id ? db.pigeons.get(id) : undefined), [id]);
+  const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+
+  if (pigeon === undefined) {
+    return <div className="py-20 text-center text-muted-foreground">Loading...</div>;
+  }
 
   if (!pigeon) {
     return (
@@ -20,12 +26,12 @@ export default function PigeonDetail() {
     );
   }
 
-  const children = pigeons.filter((p) => p.fatherId === pigeon.id || p.motherId === pigeon.id);
-  const fullSiblings = pigeons.filter((p) =>
+  const children = allPigeons.filter((p) => p.fatherId === pigeon.id || p.motherId === pigeon.id);
+  const fullSiblings = allPigeons.filter((p) =>
     p.id !== pigeon.id && pigeon.fatherId && pigeon.motherId &&
     p.fatherId === pigeon.fatherId && p.motherId === pigeon.motherId
   );
-  const halfSiblings = pigeons.filter((p) =>
+  const halfSiblings = allPigeons.filter((p) =>
     p.id !== pigeon.id &&
     ((pigeon.fatherId && p.fatherId === pigeon.fatherId && p.motherId !== pigeon.motherId) ||
      (pigeon.motherId && p.motherId === pigeon.motherId && p.fatherId !== pigeon.fatherId))
@@ -47,7 +53,11 @@ export default function PigeonDetail() {
       <Card className="overflow-hidden shadow-card">
         <div className="grid gap-6 md:grid-cols-[280px_1fr]">
           <div className="aspect-square overflow-hidden bg-secondary md:aspect-auto">
-            <img src={pigeon.image} alt={pigeon.name} className="h-full w-full object-cover" />
+            {pigeon.image ? (
+              <img src={pigeon.image} alt={pigeon.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">No image</div>
+            )}
           </div>
           <div className="flex flex-col gap-4 p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -70,10 +80,11 @@ export default function PigeonDetail() {
             </div>
 
             <div className="mt-auto flex flex-wrap gap-2">
-              <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> Action</Button>
-              <Button size="sm" variant="outline">Edit</Button>
-              <Button size="sm" variant="outline">Pedigree PDF</Button>
-              <Button size="sm" variant="outline">Add image</Button>
+              <Button asChild size="sm" className="gap-1.5">
+                <Link to={`/pigeons/${pigeon.id}/edit`}><Pencil className="h-3.5 w-3.5" /> Edit</Link>
+              </Button>
+              <Button size="sm" variant="outline" disabled>Pedigree PDF</Button>
+              <Button size="sm" variant="outline" disabled>Add image</Button>
             </div>
           </div>
         </div>
@@ -278,7 +289,7 @@ function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) 
   );
 }
 
-function RelatedGroup({ title, items }: { title: string; items: { id: string; name: string; ringNumber: string; image: string }[] }) {
+function RelatedGroup({ title, items }: { title: string; items: { id: string; name: string; ringNumber: string; image?: string }[] }) {
   return (
     <Card className="shadow-soft">
       <CardHeader><CardTitle className="text-base">{title} <span className="text-muted-foreground font-normal">({items.length})</span></CardTitle></CardHeader>
@@ -289,7 +300,11 @@ function RelatedGroup({ title, items }: { title: string; items: { id: string; na
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((p) => (
               <Link key={p.id} to={`/pigeons/${p.id}`} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2 transition-smooth hover:bg-secondary">
-                <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md object-cover" loading="lazy" />
+                {p.image ? (
+                  <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md object-cover" loading="lazy" />
+                ) : (
+                  <div className="h-10 w-10 rounded-md bg-secondary" />
+                )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{p.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{p.ringNumber}</p>

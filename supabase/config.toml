@@ -1,0 +1,4 @@
+project_id = "ughjvuwfrrrzjlpbgzjs"
+
+[functions.parse-pigeon]
+verify_jwt = false
