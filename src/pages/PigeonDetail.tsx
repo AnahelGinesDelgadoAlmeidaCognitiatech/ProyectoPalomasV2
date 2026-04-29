@@ -1,15 +1,21 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPigeon, pigeons } from "@/data/pigeons";
 import { PedigreeTree } from "@/components/PedigreeTree";
+import { db } from "@/lib/db";
 
 export default function PigeonDetail() {
   const { id } = useParams();
-  const pigeon = getPigeon(id);
+  const pigeon = useLiveQuery(() => (id ? db.pigeons.get(id) : undefined), [id]);
+  const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+
+  if (pigeon === undefined) {
+    return <div className="py-20 text-center text-muted-foreground">Loading...</div>;
+  }
 
   if (!pigeon) {
     return (
@@ -20,12 +26,12 @@ export default function PigeonDetail() {
     );
   }
 
-  const children = pigeons.filter((p) => p.fatherId === pigeon.id || p.motherId === pigeon.id);
-  const fullSiblings = pigeons.filter((p) =>
+  const children = allPigeons.filter((p) => p.fatherId === pigeon.id || p.motherId === pigeon.id);
+  const fullSiblings = allPigeons.filter((p) =>
     p.id !== pigeon.id && pigeon.fatherId && pigeon.motherId &&
     p.fatherId === pigeon.fatherId && p.motherId === pigeon.motherId
   );
-  const halfSiblings = pigeons.filter((p) =>
+  const halfSiblings = allPigeons.filter((p) =>
     p.id !== pigeon.id &&
     ((pigeon.fatherId && p.fatherId === pigeon.fatherId && p.motherId !== pigeon.motherId) ||
      (pigeon.motherId && p.motherId === pigeon.motherId && p.fatherId !== pigeon.fatherId))
