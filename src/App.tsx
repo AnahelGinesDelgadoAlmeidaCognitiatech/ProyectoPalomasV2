@@ -12,6 +12,7 @@ import AppLayout from "./layouts/AppLayout";
 import Index from "./pages/Index";
 import Pigeons from "./pages/Pigeons";
 import PigeonDetail from "./pages/PigeonDetail";
+import PigeonEdit from "./pages/PigeonEdit";
 import ModulePage from "./pages/ModulePage";
 import NotFound from "./pages/NotFound";
 
@@ -29,8 +30,9 @@ const App = () => (
 
             {/* Pigeons */}
             <Route path="/pigeons" element={<Pigeons />} />
-            <Route path="/pigeons/new" element={<ModulePage title="Create New Pigeon" description="Register a new pigeon with band, parents, color and metadata." icon={Plus} features={["Band number with country code", "Sire & Dam selection", "Color, eye, markings", "Image upload", "Status & loft assignment"]} />} />
+            <Route path="/pigeons/new" element={<PigeonEdit />} />
             <Route path="/pigeons/:id" element={<PigeonDetail />} />
+            <Route path="/pigeons/:id/edit" element={<PigeonEdit />} />
             <Route path="/pedigree-scan" element={<ModulePage title="Pedigree Scan (AI)" description="Scan a paper pedigree and let AI extract bands, parents and notes." icon={ScanLine} features={["Image / PDF upload", "AI band recognition", "Auto-link to existing pigeons", "Confidence scoring", "Manual review & edit"]} />} />
             <Route path="/statistics" element={<ModulePage title="Statistics" description="Performance analytics across your loft." icon={BarChart3} features={["Wins by season", "Distance distribution", "Best breeders heatmap", "Inbreeding trends", "Speed averages"]} />} />
             <Route path="/images" element={<ModulePage title="Images" description="All photos across your pigeons in one gallery." icon={ImageIcon} features={["Filter by pigeon", "Lightbox viewer", "Bulk upload", "Captions & dates"]} />} />
