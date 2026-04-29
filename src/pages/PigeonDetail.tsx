@@ -284,7 +284,7 @@ function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) 
   );
 }
 
-function RelatedGroup({ title, items }: { title: string; items: { id: string; name: string; ringNumber: string; image: string }[] }) {
+function RelatedGroup({ title, items }: { title: string; items: { id: string; name: string; ringNumber: string; image?: string }[] }) {
   return (
     <Card className="shadow-soft">
       <CardHeader><CardTitle className="text-base">{title} <span className="text-muted-foreground font-normal">({items.length})</span></CardTitle></CardHeader>
@@ -295,7 +295,11 @@ function RelatedGroup({ title, items }: { title: string; items: { id: string; na
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((p) => (
               <Link key={p.id} to={`/pigeons/${p.id}`} className="flex items-center gap-3 rounded-lg border border-border bg-card p-2 transition-smooth hover:bg-secondary">
-                <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md object-cover" loading="lazy" />
+                {p.image ? (
+                  <img src={p.image} alt={p.name} className="h-10 w-10 rounded-md object-cover" loading="lazy" />
+                ) : (
+                  <div className="h-10 w-10 rounded-md bg-secondary" />
+                )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{p.name}</p>
                   <p className="text-xs text-muted-foreground truncate">{p.ringNumber}</p>
