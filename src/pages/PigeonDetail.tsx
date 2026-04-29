@@ -53,7 +53,11 @@ export default function PigeonDetail() {
       <Card className="overflow-hidden shadow-card">
         <div className="grid gap-6 md:grid-cols-[280px_1fr]">
           <div className="aspect-square overflow-hidden bg-secondary md:aspect-auto">
-            <img src={pigeon.image} alt={pigeon.name} className="h-full w-full object-cover" />
+            {pigeon.image ? (
+              <img src={pigeon.image} alt={pigeon.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">No image</div>
+            )}
           </div>
           <div className="flex flex-col gap-4 p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -76,10 +80,11 @@ export default function PigeonDetail() {
             </div>
 
             <div className="mt-auto flex flex-wrap gap-2">
-              <Button size="sm" className="gap-1.5"><Plus className="h-3.5 w-3.5" /> Action</Button>
-              <Button size="sm" variant="outline">Edit</Button>
-              <Button size="sm" variant="outline">Pedigree PDF</Button>
-              <Button size="sm" variant="outline">Add image</Button>
+              <Button asChild size="sm" className="gap-1.5">
+                <Link to={`/pigeons/${pigeon.id}/edit`}><Pencil className="h-3.5 w-3.5" /> Edit</Link>
+              </Button>
+              <Button size="sm" variant="outline" disabled>Pedigree PDF</Button>
+              <Button size="sm" variant="outline" disabled>Add image</Button>
             </div>
           </div>
         </div>
