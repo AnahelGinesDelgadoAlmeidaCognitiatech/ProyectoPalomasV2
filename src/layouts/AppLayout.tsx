@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Bell, CloudOff, CloudCheck } from "lucide-react";
+import { Search, Plus, Bell, CloudOff, Check } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -91,7 +91,7 @@ export default function AppLayout() {
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem className="gap-2 text-muted-foreground">
-                      <CloudCheck className="h-4 w-4 text-success" />
+                      <Check className="h-4 w-4 text-success" />
                       <span>Todo sincronizado localmente</span>
                     </DropdownMenuItem>
                   )}
