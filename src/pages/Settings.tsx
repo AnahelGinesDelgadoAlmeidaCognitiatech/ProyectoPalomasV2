@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Settings as SettingsIcon, FileText, IdCard } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { toast } from "sonner";
