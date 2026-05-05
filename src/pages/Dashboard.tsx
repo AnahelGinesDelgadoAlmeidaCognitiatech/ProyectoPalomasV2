@@ -1,4 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bird, Trophy, Home, TrendingUp, ArrowUpRight } from "lucide-react";
@@ -6,16 +7,17 @@ import { Link } from "react-router-dom";
 import { db } from "@/lib/db";
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const pigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
   const lofts = new Set(pigeons.map((p) => p.loft).filter(Boolean));
   const racers = pigeons.filter((p) => p.status === "racer");
   const totalWins = pigeons.reduce((s, p) => s + (p.wins ?? 0), 0);
 
   const stats = [
-    { label: "Total pigeons", value: pigeons.length, change: "Tus aves registradas", icon: Bird, tint: "bg-primary/10 text-primary" },
-    { label: "Active racers", value: racers.length, change: "En competición", icon: Trophy, tint: "bg-accent/10 text-accent" },
-    { label: "Lofts", value: lofts.size, change: "Palomares", icon: Home, tint: "bg-warning/10 text-warning" },
-    { label: "Total wins", value: totalWins, change: "Histórico", icon: TrendingUp, tint: "bg-primary-glow/10 text-primary-glow" },
+    { label: t("dashboard.stats_total"), value: pigeons.length, change: t("dashboard.stats_total_desc"), icon: Bird, tint: "bg-primary/10 text-primary" },
+    { label: t("dashboard.stats_racers"), value: racers.length, change: t("dashboard.stats_racers_desc"), icon: Trophy, tint: "bg-accent/10 text-accent" },
+    { label: t("dashboard.stats_lofts"), value: lofts.size, change: t("dashboard.stats_lofts_desc"), icon: Home, tint: "bg-warning/10 text-warning" },
+    { label: t("dashboard.stats_wins"), value: totalWins, change: t("dashboard.stats_wins_desc"), icon: TrendingUp, tint: "bg-primary-glow/10 text-primary-glow" },
   ];
 
   const top = [...pigeons].sort((a, b) => (b.wins ?? 0) - (a.wins ?? 0)).slice(0, 5);
@@ -24,8 +26,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your loft and racing performance.</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+        <p className="text-muted-foreground">{t("dashboard.desc")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -48,11 +50,11 @@ export default function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2 shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Top performers</CardTitle>
-            <Link to="/pigeons" className="text-sm text-primary hover:underline">View all</Link>
+            <CardTitle className="text-lg">{t("dashboard.top_performers")}</CardTitle>
+            <Link to="/pigeons" className="text-sm text-primary hover:underline">{t("dashboard.view_all")}</Link>
           </CardHeader>
           <CardContent className="space-y-2">
-            {top.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay palomas. Añade la primera.</p>}
+            {top.length === 0 && <p className="text-sm text-muted-foreground">{t("dashboard.no_pigeons")}</p>}
             {top.map((p, i) => (
               <Link
                 key={p.id}
@@ -70,7 +72,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground truncate">{p.ringNumber}</p>
                 </div>
                 <Badge variant="secondary" className="bg-accent/10 text-accent border-0">
-                  {p.wins ?? 0} wins
+                  {p.wins ?? 0} {t("dashboard.wins")}
                 </Badge>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
               </Link>
@@ -80,10 +82,10 @@ export default function Dashboard() {
 
         <Card className="shadow-soft">
           <CardHeader>
-            <CardTitle className="text-lg">Recently added</CardTitle>
+            <CardTitle className="text-lg">{t("dashboard.recent")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {recent.length === 0 && <p className="text-sm text-muted-foreground">Sin actividad reciente.</p>}
+            {recent.length === 0 && <p className="text-sm text-muted-foreground">{t("dashboard.no_recent")}</p>}
             {recent.map((p) => (
               <Link key={p.id} to={`/pigeons/${p.id}`} className="flex items-center gap-3 rounded-lg p-2 transition-smooth hover:bg-secondary">
                 {p.image ? (

@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { getPigeon, type Pigeon } from "@/data/pigeons";
+import { useTranslation } from "react-i18next";
 
 function Node({ pigeon, accent }: { pigeon?: Pigeon; accent?: string }) {
+  const { t } = useTranslation();
   if (!pigeon) {
     return (
       <div className="flex h-full min-h-[72px] items-center justify-center rounded-lg border border-dashed border-border bg-secondary/40 px-3 text-xs text-muted-foreground">
-        Unknown
+        {t("pedigree_tree.unknown")}
       </div>
     );
   }

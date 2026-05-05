@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ const statusStyles: Record<Status, string> = {
 export default function Pigeons() {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | Status>("all");
+  const { t } = useTranslation();
 
   useEffect(() => {
     seedIfEmpty();
@@ -47,35 +49,35 @@ export default function Pigeons() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pigeons</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("pigeons.title")}</h1>
           <p className="text-muted-foreground">
-            Manage your loft — {all.length} birds total.
+            {t("pigeons.manage_loft", { count: all.length })}
             {pendingSync > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-xs text-warning">
-                <CloudOff className="h-3 w-3" /> {pendingSync} pending sync
+                <CloudOff className="h-3 w-3" /> {t("pigeons.pending_sync", { count: pendingSync })}
               </span>
             )}
           </p>
         </div>
         <Button asChild className="gap-2 shadow-elegant">
-          <Link to="/pigeons/new"><Plus className="h-4 w-4" /> Add pigeon</Link>
+          <Link to="/pigeons/new"><Plus className="h-4 w-4" /> {t("pigeons.add")}</Link>
         </Button>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
           <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="breeder">Breeders</TabsTrigger>
-            <TabsTrigger value="racer">Racers</TabsTrigger>
-            <TabsTrigger value="young">Young</TabsTrigger>
-            <TabsTrigger value="lost">Lost</TabsTrigger>
+            <TabsTrigger value="all">{t("pigeons.tab_all")}</TabsTrigger>
+            <TabsTrigger value="breeder">{t("pigeons.tab_breeders")}</TabsTrigger>
+            <TabsTrigger value="racer">{t("pigeons.tab_racers")}</TabsTrigger>
+            <TabsTrigger value="young">{t("pigeons.tab_young")}</TabsTrigger>
+            <TabsTrigger value="lost">{t("pigeons.tab_lost")}</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="relative max-w-xs w-full">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name, band, loft..."
+            placeholder={t("pigeons.search_placeholder")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-9"
@@ -86,7 +88,7 @@ export default function Pigeons() {
       {filtered.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center text-muted-foreground">
-            No pigeons match your filters.
+            {t("pigeons.empty")}
           </CardContent>
         </Card>
       ) : (
@@ -104,7 +106,7 @@ export default function Pigeons() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">
-                      No image
+                      {t("pigeons.no_image")}
                     </div>
                   )}
                 </div>
@@ -117,7 +119,7 @@ export default function Pigeons() {
                       <h3 className="font-semibold truncate">{p.name || "—"}</h3>
                     </div>
                     <Badge variant="secondary" className={`border-0 capitalize ${statusStyles[p.status]}`}>
-                      {p.status}
+                      {t(`status.${p.status}`)}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">

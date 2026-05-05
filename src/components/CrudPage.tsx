@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import type { Table } from "dexie";
 import { Plus, Pencil, Trash2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
   const items = useLiveQuery(() => table.orderBy("updatedAt").reverse().toArray(), []) ?? [];
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const { t } = useTranslation();
 
   function newItem() {
     const now = Date.now();
@@ -51,7 +53,7 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
     if (err) { toast.error(err); return; }
     for (const f of fields) {
       if ((f as any).required && !String(editing[f.name] ?? "").trim()) {
-        toast.error(`Campo requerido: ${f.label}`);
+        toast.error(t("crud.required_field", { field: f.label }));
         return;
       }
     }
@@ -59,15 +61,15 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
     const payload = { ...editing, updatedAt: Date.now() } as T;
     await table.put(payload);
     await enqueueSync({ entity, op: isNew ? "create" : "update", payload });
-    toast.success(isNew ? "Creado" : "Guardado");
+    toast.success(isNew ? t("crud.created") : t("crud.saved"));
     setOpen(false);
     setEditing(null);
   }
 
   async function remove(id: string) {
-    if (!confirm("¿Eliminar este registro?")) return;
+    if (!confirm(t("crud.delete_confirm"))) return;
     await removeAndSync(table as any, entity, id);
-    toast.success("Eliminado");
+    toast.success(t("crud.deleted"));
   }
 
   return (
@@ -84,10 +86,16 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
         </div>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
           <DialogTrigger asChild>
-            <Button onClick={newItem} className="gap-2"><Plus className="h-4 w-4" /> Nuevo</Button>
+            <Button onClick={newItem} className="gap-2"><Plus className="h-4 w-4" /> {t("crud.new")}</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editing && items.find((i) => i.id === editing.id) ? "Editar" : "Nuevo"} {title.toLowerCase()}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>
+                {editing && items.find((i) => i.id === editing.id)
+                  ? t("crud.edit_item", { item: title.toLowerCase() })
+                  : t("crud.new_item", { item: title.toLowerCase() })}
+              </DialogTitle>
+            </DialogHeader>
             {editing && (
               <div className="grid gap-3 sm:grid-cols-2">
                 {fields.map((f) => (
@@ -115,15 +123,15 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={save}>Guardar</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("crud.cancel")}</Button>
+              <Button onClick={save}>{t("crud.save")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       {items.length === 0 ? (
-        <Card><CardContent className="py-16 text-center text-muted-foreground">Sin registros. Pulsa "Nuevo" para añadir el primero.</CardContent></Card>
+        <Card><CardContent className="py-16 text-center text-muted-foreground">{t("crud.empty")}</CardContent></Card>
       ) : (
         <div className="grid gap-3">
           {items.map((it) => (
@@ -131,8 +139,8 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
               <CardContent className="flex items-center justify-between gap-4 p-4">
                 <div className="min-w-0 flex-1">{renderItem(it)}</div>
                 <div className="flex items-center gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => editItem(it)} aria-label="Editar"><Pencil className="h-4 w-4" /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => remove(it.id)} aria-label="Eliminar"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => editItem(it)} aria-label={t("crud.aria_edit")}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(it.id)} aria-label={t("crud.aria_delete")}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </CardContent>
             </Card>

@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +13,17 @@ export default function PigeonDetail() {
   const { id } = useParams();
   const pigeon = useLiveQuery(() => (id ? db.pigeons.get(id) : undefined), [id]);
   const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+  const { t } = useTranslation();
 
   if (pigeon === undefined) {
-    return <div className="py-20 text-center text-muted-foreground">Loading...</div>;
+    return <div className="py-20 text-center text-muted-foreground">{t("pigeon_detail.loading")}</div>;
   }
 
   if (!pigeon) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted-foreground">Pigeon not found.</p>
-        <Button asChild variant="link"><Link to="/pigeons">Back to pigeons</Link></Button>
+        <p className="text-muted-foreground">{t("pigeon_detail.not_found")}</p>
+        <Button asChild variant="link"><Link to="/pigeons">{t("pigeon_detail.back")}</Link></Button>
       </div>
     );
   }
@@ -46,7 +48,7 @@ export default function PigeonDetail() {
   return (
     <div className="space-y-6">
       <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-        <Link to="/pigeons"><ArrowLeft className="h-4 w-4" /> Back to pigeons</Link>
+        <Link to="/pigeons"><ArrowLeft className="h-4 w-4" /> {t("pigeon_detail.back")}</Link>
       </Button>
 
       {/* Header card */}
@@ -56,7 +58,7 @@ export default function PigeonDetail() {
             {pigeon.image ? (
               <img src={pigeon.image} alt={pigeon.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">No image</div>
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">{t("pigeons.no_image")}</div>
             )}
           </div>
           <div className="flex flex-col gap-4 p-6">
@@ -67,24 +69,24 @@ export default function PigeonDetail() {
                 <p className="mt-1 text-sm text-muted-foreground">{pigeon.color} · {pigeon.loft}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="border-0 capitalize bg-primary/10 text-primary">{pigeon.status}</Badge>
+                <Badge variant="secondary" className="border-0 capitalize bg-primary/10 text-primary">{t(`status.${pigeon.status}`)}</Badge>
                 <Badge variant="secondary" className="border-0 bg-accent/10 text-accent">{Math.min(rating, 100)}/100</Badge>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <Stat label="Wins" value={String(pigeon.wins ?? 0)} />
-              <Stat label="Races" value={String(pigeon.races ?? 0)} />
-              <Stat label="Children" value={String(children.length)} />
-              <Stat label="Inbreeding" value={`${inbreeding}%`} />
+              <Stat label={t("pigeon_detail.wins")} value={String(pigeon.wins ?? 0)} />
+              <Stat label={t("pigeon_detail.races")} value={String(pigeon.races ?? 0)} />
+              <Stat label={t("pigeon_detail.children")} value={String(children.length)} />
+              <Stat label={t("pigeon_detail.inbreeding")} value={`${inbreeding}%`} />
             </div>
 
             <div className="mt-auto flex flex-wrap gap-2">
               <Button asChild size="sm" className="gap-1.5">
-                <Link to={`/pigeons/${pigeon.id}/edit`}><Pencil className="h-3.5 w-3.5" /> Edit</Link>
+                <Link to={`/pigeons/${pigeon.id}/edit`}><Pencil className="h-3.5 w-3.5" /> {t("pigeon_detail.edit")}</Link>
               </Button>
-              <Button size="sm" variant="outline" disabled>Pedigree PDF</Button>
-              <Button size="sm" variant="outline" disabled>Add image</Button>
+              <Button size="sm" variant="outline" disabled>{t("pigeon_detail.pdf")}</Button>
+              <Button size="sm" variant="outline" disabled>{t("pigeon_detail.add_image")}</Button>
             </div>
           </div>
         </div>
@@ -92,56 +94,56 @@ export default function PigeonDetail() {
 
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
-          <TabsTrigger value="races">Race history</TabsTrigger>
-          <TabsTrigger value="medications">Medications</TabsTrigger>
-          <TabsTrigger value="comments">Comments</TabsTrigger>
-          <TabsTrigger value="related">Related</TabsTrigger>
+          <TabsTrigger value="overview">{t("pigeon_detail.tab_overview")}</TabsTrigger>
+          <TabsTrigger value="pedigree">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
+          <TabsTrigger value="races">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
+          <TabsTrigger value="medications">{t("pigeon_detail.tab_medications")}</TabsTrigger>
+          <TabsTrigger value="comments">{t("pigeon_detail.tab_comments")}</TabsTrigger>
+          <TabsTrigger value="related">{t("pigeon_detail.tab_related")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 grid gap-6 lg:grid-cols-2">
-          <InfoCard title="Basic Information" rows={[
-            ["Name", pigeon.name],
-            ["DOB", `${pigeon.bornYear}`],
-            ["Sex", pigeon.sex === "cock" ? "♂ Cock" : "♀ Hen"],
-            ["ID Band", pigeon.ringNumber],
-            ["Trail Band", "—"],
+          <InfoCard title={t("pigeon_detail.basic_info")} rows={[
+            [t("pigeon_detail.name"), pigeon.name],
+            [t("pigeon_detail.dob"), `${pigeon.bornYear}`],
+            [t("pigeon_detail.sex"), pigeon.sex === "cock" ? t("pigeon_detail.cock") : t("pigeon_detail.hen")],
+            [t("pigeon_detail.id_band"), pigeon.ringNumber],
+            [t("pigeon_detail.trail_band"), "—"],
           ]} />
-          <InfoCard title="Meta Information" rows={[
-            ["Status", pigeon.status],
-            ["Location", pigeon.loft],
-            ["Family", "Klein Dirk"],
-            ["Last Owner", "—"],
-            ["Rating", `${Math.min(rating, 100)}/100`],
-            ["Tags", "—"],
+          <InfoCard title={t("pigeon_detail.meta_info")} rows={[
+            [t("sidebar.stations_group").slice(0, -1), pigeon.status], // Temporary fix
+            [t("pigeon_detail.location"), pigeon.loft],
+            [t("pigeon_detail.family"), "Klein Dirk"],
+            [t("pigeon_detail.last_owner"), "—"],
+            [t("pigeon_detail.rating"), `${Math.min(rating, 100)}/100`],
+            [t("pigeon_detail.tags"), "—"],
           ]} />
-          <InfoCard title="Color Information" rows={[
-            ["Color", pigeon.color],
-            ["Eye", "Orange"],
-            ["Leg", "—"],
-            ["Markings", "—"],
+          <InfoCard title={t("pigeon_detail.color_info")} rows={[
+            [t("autocomplete.cat_color").slice(0, -1), pigeon.color],
+            [t("pigeon_detail.eye"), "Orange"],
+            [t("pigeon_detail.leg"), "—"],
+            [t("pigeon_detail.markings"), "—"],
           ]} />
-          <InfoCard title="Genetics" rows={[
-            ["Base Color", "Blue"],
-            ["Carried Color", "—"],
-            ["Patterns", "Bar"],
-            ["Carried Patterns", "—"],
-            ["Spread", "—"],
-            ["Dilute", "—"],
-            ["Grizzle", "—"],
-            ["Recessive Red", "—"],
+          <InfoCard title={t("pigeon_detail.genetics")} rows={[
+            [t("pigeon_detail.base_color"), "Blue"],
+            [t("pigeon_detail.carried_color"), "—"],
+            [t("pigeon_detail.patterns"), "Bar"],
+            [t("pigeon_detail.carried_patterns"), "—"],
+            [t("pigeon_detail.spread"), "—"],
+            [t("pigeon_detail.dilute"), "—"],
+            [t("pigeon_detail.grizzle"), "—"],
+            [t("pigeon_detail.recessive_red"), "—"],
           ]} />
           <Card className="lg:col-span-2 shadow-soft">
             <CardHeader>
-              <CardTitle className="text-base">Coefficient of Inbreeding</CardTitle>
+              <CardTitle className="text-base">{t("pigeon_detail.coi")}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-3xl font-bold text-primary">{inbreeding}%</p>
-                <p className="text-xs text-muted-foreground">Calculated from 5 generations</p>
+                <p className="text-xs text-muted-foreground">{t("pigeon_detail.calc_5_gen")}</p>
               </div>
-              <Button variant="outline">Recalculate</Button>
+              <Button variant="outline">{t("pigeon_detail.recalculate")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -149,16 +151,16 @@ export default function PigeonDetail() {
         <TabsContent value="pedigree" className="mt-6">
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle className="text-lg">Pedigree (3 generations)</CardTitle>
+              <CardTitle className="text-lg">{t("pigeon_detail.pedigree_3_gen")}</CardTitle>
             </CardHeader>
             <CardContent>
               <PedigreeTree rootId={pigeon.id} />
               <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-3 w-1 rounded-sm bg-primary" /> Cock line
+                  <span className="inline-block h-3 w-1 rounded-sm bg-primary" /> {t("pigeon_detail.cock_line")}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="inline-block h-3 w-1 rounded-sm bg-accent" /> Hen line
+                  <span className="inline-block h-3 w-1 rounded-sm bg-accent" /> {t("pigeon_detail.hen_line")}
                 </span>
               </div>
             </CardContent>
@@ -168,21 +170,21 @@ export default function PigeonDetail() {
         <TabsContent value="races" className="mt-6">
           <Card className="shadow-soft">
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2"><Trophy className="h-5 w-5 text-accent" /> Race history</CardTitle>
-              <Button size="sm" variant="outline">Create a Race</Button>
+              <CardTitle className="text-lg flex items-center gap-2"><Trophy className="h-5 w-5 text-accent" /> {t("pigeon_detail.tab_race_history")}</CardTitle>
+              <Button size="sm" variant="outline">{t("pigeon_detail.create_race")}</Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-                      <th className="py-2 pr-3">Race</th>
-                      <th className="py-2 pr-3">Date</th>
-                      <th className="py-2 pr-3">Distance</th>
-                      <th className="py-2 pr-3">Total Birds</th>
-                      <th className="py-2 pr-3">Arrived</th>
-                      <th className="py-2 pr-3">Place</th>
-                      <th className="py-2 pr-3">Avg Speed</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.race")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.date")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.distance")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.total_birds")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.arrived")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.place")}</th>
+                      <th className="py-2 pr-3">{t("pigeon_detail.avg_speed")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -211,8 +213,8 @@ export default function PigeonDetail() {
         <TabsContent value="medications" className="mt-6">
           <Card className="shadow-soft">
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2"><Pill className="h-5 w-5 text-primary" /> Medications</CardTitle>
-              <Button size="sm" variant="outline">Add medication</Button>
+              <CardTitle className="text-lg flex items-center gap-2"><Pill className="h-5 w-5 text-primary" /> {t("pigeon_detail.tab_medications")}</CardTitle>
+              <Button size="sm" variant="outline">{t("pigeon_detail.add_medication")}</Button>
             </CardHeader>
             <CardContent className="space-y-2">
               {[
@@ -234,8 +236,8 @@ export default function PigeonDetail() {
         <TabsContent value="comments" className="mt-6">
           <Card className="shadow-soft">
             <CardHeader className="flex-row items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2"><MessageSquarePlus className="h-5 w-5 text-primary" /> Comments</CardTitle>
-              <Button size="sm" variant="outline">Add comment</Button>
+              <CardTitle className="text-lg flex items-center gap-2"><MessageSquarePlus className="h-5 w-5 text-primary" /> {t("pigeon_detail.tab_comments")}</CardTitle>
+              <Button size="sm" variant="outline">{t("pigeon_detail.add_comment")}</Button>
             </CardHeader>
             <CardContent className="space-y-3">
               {[
@@ -252,10 +254,10 @@ export default function PigeonDetail() {
         </TabsContent>
 
         <TabsContent value="related" className="mt-6 space-y-6">
-          <RelatedGroup title="Children" items={children} />
-          <RelatedGroup title="Full siblings" items={fullSiblings} />
-          <RelatedGroup title="Half siblings (sire side)" items={halfSiblings.filter((p) => p.fatherId === pigeon.fatherId)} />
-          <RelatedGroup title="Half siblings (dam side)" items={halfSiblings.filter((p) => p.motherId === pigeon.motherId)} />
+          <RelatedGroup title={t("pigeon_detail.children")} items={children} />
+          <RelatedGroup title={t("pigeon_detail.full_siblings")} items={fullSiblings} />
+          <RelatedGroup title={t("pigeon_detail.half_siblings_sire")} items={halfSiblings.filter((p) => p.fatherId === pigeon.fatherId)} />
+          <RelatedGroup title={t("pigeon_detail.half_siblings_dam")} items={halfSiblings.filter((p) => p.motherId === pigeon.motherId)} />
         </TabsContent>
       </Tabs>
     </div>
@@ -290,12 +292,13 @@ function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) 
 }
 
 function RelatedGroup({ title, items }: { title: string; items: { id: string; name: string; ringNumber: string; image?: string }[] }) {
+  const { t } = useTranslation();
   return (
     <Card className="shadow-soft">
       <CardHeader><CardTitle className="text-base">{title} <span className="text-muted-foreground font-normal">({items.length})</span></CardTitle></CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">None recorded.</p>
+          <p className="text-sm text-muted-foreground">{t("pigeon_detail.none_recorded")}</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((p) => (

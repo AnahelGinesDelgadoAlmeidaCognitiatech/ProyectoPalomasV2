@@ -1,30 +1,32 @@
 import { Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { CrudPage } from "@/components/CrudPage";
 import { db, type Race } from "@/lib/db";
 
 export default function Races() {
+  const { t } = useTranslation();
   return (
     <CrudPage<Race>
-      title="Races"
-      description="Crea carreras y registra resultados."
+      title={t("sidebar.races")}
+      description={t("crud_pages.races.desc")}
       icon={Trophy}
       table={db.races}
       entity="race"
       defaults={() => ({ date: new Date().toISOString().slice(0, 10), name: "", results: [] })}
       fields={[
-        { name: "name", label: "Nombre", required: true, placeholder: "Barcelona Internacional" },
-        { name: "date", label: "Fecha", type: "date", required: true },
-        { name: "stationId", label: "Suelta (Station)", placeholder: "Barcelona" },
-        { name: "distanceKm", label: "Distancia (km)", type: "number" },
-        { name: "totalBirds", label: "Total aves", type: "number" },
-        { name: "liberationTime", label: "Hora suelta", placeholder: "08:30" },
-        { name: "notes", label: "Notas", type: "textarea", full: true },
+        { name: "name", label: t("crud_pages.races.field_name"), required: true, placeholder: t("crud_pages.races.placeholder_name") },
+        { name: "date", label: t("crud_pages.races.field_date"), type: "date", required: true },
+        { name: "stationId", label: t("crud_pages.races.field_station"), placeholder: "Barcelona" },
+        { name: "distanceKm", label: t("crud_pages.races.field_distance"), type: "number" },
+        { name: "totalBirds", label: t("crud_pages.races.field_total"), type: "number" },
+        { name: "liberationTime", label: t("crud_pages.races.field_time"), placeholder: "08:30" },
+        { name: "notes", label: t("crud_pages.races.field_notes"), type: "textarea", full: true },
       ]}
       renderItem={(r) => (
         <div>
           <p className="font-semibold">{r.name}</p>
           <p className="text-xs text-muted-foreground">
-            {r.date} {r.distanceKm ? `· ${r.distanceKm} km` : ""} {r.totalBirds ? `· ${r.totalBirds} aves` : ""}
+            {r.date} {r.distanceKm ? `· ${r.distanceKm} km` : ""} {r.totalBirds ? `· ${r.totalBirds} ${t("crud_pages.races.birds")}` : ""}
           </p>
         </div>
       )}

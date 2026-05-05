@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { db, seedIfEmpty } from "@/lib/db";
 export default function AppLayout() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => { seedIfEmpty(); }, []);
 
@@ -49,7 +51,7 @@ export default function AppLayout() {
             <form onSubmit={submitSearch} className="relative hidden flex-1 max-w-md md:block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by ring, name or loft..."
+                placeholder={t("layout.search_placeholder")}
                 className="pl-9"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -74,7 +76,7 @@ export default function AppLayout() {
               <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+                  <Button variant="ghost" size="icon" aria-label={t("layout.notifications")} className="relative">
                     <Bell className="h-4 w-4" />
                     {pending > 0 && (
                       <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-warning" />
@@ -82,17 +84,17 @@ export default function AppLayout() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-72">
-                  <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t("layout.notifications")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {pending > 0 ? (
                     <DropdownMenuItem className="gap-2">
                       <CloudOff className="h-4 w-4 text-warning" />
-                      <span>{pending} cambios pendientes de subir</span>
+                      <span>{t("layout.pending_changes", { count: pending })}</span>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem className="gap-2 text-muted-foreground">
                       <Check className="h-4 w-4 text-success" />
-                      <span>Todo sincronizado localmente</span>
+                      <span>{t("layout.all_synced")}</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -100,7 +102,7 @@ export default function AppLayout() {
               <Button asChild size="sm" className="gap-2">
                 <Link to="/pigeons/new">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add pigeon</span>
+                  <span className="hidden sm:inline">{t("layout.add_pigeon")}</span>
                 </Link>
               </Button>
             </div>

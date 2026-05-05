@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Construction, type LucideIcon } from "lucide-react";
@@ -10,6 +11,7 @@ interface ModulePageProps {
 }
 
 export default function ModulePage({ title, description, icon: Icon, features = [] }: ModulePageProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -18,7 +20,7 @@ export default function ModulePage({ title, description, icon: Icon, features = 
           <p className="text-muted-foreground">{description}</p>
         </div>
         <Button variant="outline" size="sm" disabled className="gap-2">
-          <Construction className="h-4 w-4" /> Coming soon
+          <Construction className="h-4 w-4" /> {t("coming_soon.badge")}
         </Button>
       </div>
 
@@ -30,7 +32,7 @@ export default function ModulePage({ title, description, icon: Icon, features = 
         </div>
         {features.length > 0 && (
           <CardContent className="p-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Planned features</p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("coming_soon.planned")}</p>
             <ul className="grid gap-2 sm:grid-cols-2">
               {features.map((f) => (
                 <li key={f} className="flex items-center gap-2 rounded-lg bg-secondary/50 p-3 text-sm">
@@ -44,10 +46,10 @@ export default function ModulePage({ title, description, icon: Icon, features = 
       </Card>
 
       <Card className="shadow-soft">
-        <CardHeader><CardTitle className="text-base">Tell us what you need</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("coming_soon.tell_us")}</CardTitle></CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Describe the workflow you'd like in this module and we'll build it next iteration.
+            {t("coming_soon.tell_us_desc")}
           </p>
         </CardContent>
       </Card>

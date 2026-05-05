@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Bird, Plus, ScanLine, BarChart3, Image as ImageIcon, Globe, ArrowLeftRight,
   Heart, CalendarDays, Users, Trophy, Ruler, Gauge, MapPinned, Radio, Home,
@@ -14,58 +15,58 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown } from "lucide-react";
 import pigeonLogo from "@/assets/pigeon-hero.png";
 
-type Item = { title: string; url: string; icon: React.ComponentType<{ className?: string }>; badge?: string };
-type Group = { label: string; icon: React.ComponentType<{ className?: string }>; items: Item[] };
+type Item = { titleKey: string; url: string; icon: React.ComponentType<{ className?: string }>; badge?: string };
+type Group = { labelKey: string; icon: React.ComponentType<{ className?: string }>; items: Item[] };
 
 const groups: Group[] = [
   {
-    label: "Pigeons", icon: Bird, items: [
-      { title: "My Pigeons", url: "/pigeons", icon: Bird },
-      { title: "Create New Pigeon", url: "/pigeons/new", icon: Plus },
-      { title: "Pedigree Scan", url: "/pedigree-scan", icon: ScanLine, badge: "AI" },
-      { title: "Statistics", url: "/statistics", icon: BarChart3 },
-      { title: "Images", url: "/images", icon: ImageIcon },
-      { title: "Public Pigeons", url: "/public", icon: Globe },
-      { title: "Transfers", url: "/transfers", icon: ArrowLeftRight },
+    labelKey: "sidebar.pigeons", icon: Bird, items: [
+      { titleKey: "sidebar.my_pigeons", url: "/pigeons", icon: Bird },
+      { titleKey: "sidebar.create_new_pigeon", url: "/pigeons/new", icon: Plus },
+      { titleKey: "sidebar.pedigree_scan", url: "/pedigree-scan", icon: ScanLine, badge: "AI" },
+      { titleKey: "sidebar.statistics", url: "/statistics", icon: BarChart3 },
+      { titleKey: "sidebar.images", url: "/images", icon: ImageIcon },
+      { titleKey: "sidebar.public_pigeons", url: "/public", icon: Globe },
+      { titleKey: "sidebar.transfers", url: "/transfers", icon: ArrowLeftRight },
     ],
   },
   {
-    label: "Breeding", icon: Heart, items: [
-      { title: "Seasons", url: "/seasons", icon: CalendarDays },
-      { title: "Pairs", url: "/pairs", icon: Heart },
+    labelKey: "sidebar.breeding", icon: Heart, items: [
+      { titleKey: "sidebar.seasons", url: "/seasons", icon: CalendarDays },
+      { titleKey: "sidebar.pairs", url: "/pairs", icon: Heart },
     ],
   },
   {
-    label: "Racing", icon: Trophy, items: [
-      { title: "Races", url: "/races", icon: Trophy },
-      { title: "Distance Calculator", url: "/distance", icon: Ruler },
-      { title: "Speed Calculator", url: "/speed", icon: Gauge },
-      { title: "Road Trainer", url: "/trainer", icon: Radio },
+    labelKey: "sidebar.racing", icon: Trophy, items: [
+      { titleKey: "sidebar.races", url: "/races", icon: Trophy },
+      { titleKey: "sidebar.distance_calculator", url: "/distance", icon: Ruler },
+      { titleKey: "sidebar.speed_calculator", url: "/speed", icon: Gauge },
+      { titleKey: "sidebar.road_trainer", url: "/trainer", icon: Radio },
     ],
   },
   {
-    label: "Stations", icon: MapPinned, items: [
-      { title: "Stations", url: "/stations", icon: MapPinned },
-      { title: "My Loft", url: "/loft", icon: Home },
+    labelKey: "sidebar.stations_group", icon: MapPinned, items: [
+      { titleKey: "sidebar.stations", url: "/stations", icon: MapPinned },
+      { titleKey: "sidebar.my_loft", url: "/loft", icon: Home },
     ],
   },
   {
-    label: "Journals", icon: BookOpen, items: [
-      { title: "Daily Journal", url: "/journal", icon: BookOpen },
-      { title: "Medications", url: "/medications", icon: Pill },
-      { title: "Pigeon Comments", url: "/comments/pigeon", icon: MessageSquare },
-      { title: "Pair Comments", url: "/comments/pair", icon: MessageSquare },
-      { title: "Team Comments", url: "/comments/team", icon: MessageSquare },
+    labelKey: "sidebar.journals", icon: BookOpen, items: [
+      { titleKey: "sidebar.daily_journal", url: "/journal", icon: BookOpen },
+      { titleKey: "sidebar.medications", url: "/medications", icon: Pill },
+      { titleKey: "sidebar.pigeon_comments", url: "/comments/pigeon", icon: MessageSquare },
+      { titleKey: "sidebar.pair_comments", url: "/comments/pair", icon: MessageSquare },
+      { titleKey: "sidebar.team_comments", url: "/comments/team", icon: MessageSquare },
     ],
   },
   {
-    label: "Settings", icon: Settings, items: [
-      { title: "General Options", url: "/settings/general", icon: Settings },
-      { title: "Pedigree Options", url: "/settings/pedigree", icon: FileText },
-      { title: "Information Card Options", url: "/settings/card", icon: IdCard },
-      { title: "Band Collections", url: "/settings/bands", icon: Database },
-      { title: "Autocomplete Values", url: "/settings/autocomplete", icon: Tags },
-      { title: "Filters", url: "/settings/filters", icon: Filter },
+    labelKey: "sidebar.settings", icon: Settings, items: [
+      { titleKey: "sidebar.general_options", url: "/settings/general", icon: Settings },
+      { titleKey: "sidebar.pedigree_options", url: "/settings/pedigree", icon: FileText },
+      { titleKey: "sidebar.card_options", url: "/settings/card", icon: IdCard },
+      { titleKey: "sidebar.bands", url: "/settings/bands", icon: Database },
+      { titleKey: "sidebar.autocomplete", url: "/settings/autocomplete", icon: Tags },
+      { titleKey: "sidebar.filters", url: "/settings/filters", icon: Filter },
     ],
   },
 ];
@@ -74,6 +75,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { t } = useTranslation();
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname === path || location.pathname.startsWith(path + "/");
@@ -104,7 +106,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={location.pathname === "/"}>
                   <NavLink to="/" end>
                     <LayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>{t("sidebar.dashboard")}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -112,7 +114,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/contacts")}>
                   <NavLink to="/contacts">
                     <Contact2 className="h-4 w-4" />
-                    <span>Contacts</span>
+                    <span>{t("sidebar.contacts")}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -120,7 +122,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/teams")}>
                   <NavLink to="/teams">
                     <Users className="h-4 w-4" />
-                    <span>Teams</span>
+                    <span>{t("sidebar.teams")}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -129,12 +131,12 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {groups.map((g) => (
-          <Collapsible key={g.label} defaultOpen={groupHasActive(g) || g.label === "Pigeons"} className="group/collapsible">
+          <Collapsible key={g.labelKey} defaultOpen={groupHasActive(g) || g.labelKey === "sidebar.pigeons"} className="group/collapsible">
             <SidebarGroup>
               <SidebarGroupLabel asChild>
                 <CollapsibleTrigger className="flex w-full items-center gap-2 text-xs font-semibold uppercase tracking-wide hover:text-foreground">
                   <g.icon className="h-3.5 w-3.5" />
-                  <span>{g.label}</span>
+                  <span>{t(g.labelKey)}</span>
                   <ChevronDown className="ml-auto h-3.5 w-3.5 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
@@ -146,7 +148,7 @@ export function AppSidebar() {
                         <SidebarMenuButton asChild isActive={isActive(item.url)} size="sm">
                           <NavLink to={item.url}>
                             <item.icon className="h-4 w-4" />
-                            <span className="flex-1">{item.title}</span>
+                            <span className="flex-1">{t(item.titleKey)}</span>
                             {item.badge && (
                               <span className="rounded-md bg-gradient-hero px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
                                 {item.badge}

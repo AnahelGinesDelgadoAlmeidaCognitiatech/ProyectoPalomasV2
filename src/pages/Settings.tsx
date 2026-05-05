@@ -1,6 +1,7 @@
 import { Settings as SettingsIcon, FileText, IdCard } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -29,29 +30,30 @@ export function GeneralSettings() {
   const [dateFormat, setDateFormat] = useSetting<string>("dateFormat", "YYYY-MM-DD");
   const [defaultLoft, setDefaultLoft] = useSetting<string>("defaultLoft", "");
   const [language, setLanguage] = useSetting<string>("language", "es");
+  const { t } = useTranslation();
 
   return (
-    <SettingsShell title="General Options" icon={SettingsIcon} description="Unidades, idioma, defaults.">
+    <SettingsShell title={t("settings.general_title")} icon={SettingsIcon} description={t("settings.general_desc")}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Tema">
+        <Field label={t("settings.theme")}>
           <Select value={theme} onValueChange={(v) => setTheme(v as any)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Claro</SelectItem>
-              <SelectItem value="dark">Oscuro</SelectItem>
+              <SelectItem value="light">{t("settings.light")}</SelectItem>
+              <SelectItem value="dark">{t("settings.dark")}</SelectItem>
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Unidades">
+        <Field label={t("settings.units")}>
           <Select value={units} onValueChange={(v) => setUnits(v as any)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="km">Kilómetros</SelectItem>
-              <SelectItem value="mi">Millas</SelectItem>
+              <SelectItem value="km">{t("settings.kilometers")}</SelectItem>
+              <SelectItem value="mi">{t("settings.miles")}</SelectItem>
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Formato de fecha">
+        <Field label={t("settings.date_format")}>
           <Select value={dateFormat} onValueChange={setDateFormat}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -61,16 +63,16 @@ export function GeneralSettings() {
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Idioma">
+        <Field label={t("settings.language")}>
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="es">Español</SelectItem>
-              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="es">{t("settings.spanish")}</SelectItem>
+              <SelectItem value="en">{t("settings.english")}</SelectItem>
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Palomar por defecto">
+        <Field label={t("settings.default_loft")}>
           <Input value={defaultLoft} onChange={(e) => setDefaultLoft(e.target.value)} placeholder="Main Loft" />
         </Field>
       </div>
@@ -82,25 +84,26 @@ export function PedigreeSettings() {
   const [generations, setGenerations] = useSetting<number>("pedigree.generations", 4);
   const [showPhotos, setShowPhotos] = useSetting<boolean>("pedigree.showPhotos", true);
   const [headerLogo, setHeaderLogo] = useSetting<string>("pedigree.headerLogo", "");
+  const { t } = useTranslation();
 
   return (
-    <SettingsShell title="Pedigree Options" icon={FileText} description="Personaliza el layout de pedigree impreso.">
+    <SettingsShell title={t("settings.pedigree_title")} icon={FileText} description={t("settings.pedigree_desc")}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Generaciones">
+        <Field label={t("settings.generations")}>
           <Select value={String(generations)} onValueChange={(v) => setGenerations(Number(v))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {[3, 4, 5].map((n) => <SelectItem key={n} value={String(n)}>{n} generaciones</SelectItem>)}
+              {[3, 4, 5].map((n) => <SelectItem key={n} value={String(n)}>{t("settings.generations_count", { count: n })}</SelectItem>)}
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Logo cabecera">
+        <Field label={t("settings.header_logo")}>
           <Input value={headerLogo} onChange={(e) => setHeaderLogo(e.target.value)} placeholder="URL o texto" />
         </Field>
         <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
           <div>
-            <Label>Mostrar fotos</Label>
-            <p className="text-xs text-muted-foreground">Incluye foto de cada paloma en el pedigree.</p>
+            <Label>{t("settings.show_photos")}</Label>
+            <p className="text-xs text-muted-foreground">{t("settings.show_photos_desc")}</p>
           </div>
           <Switch checked={showPhotos} onCheckedChange={setShowPhotos} />
         </div>
@@ -113,15 +116,16 @@ export function CardSettings() {
   const [showStats, setShowStats] = useSetting<boolean>("card.showStats", true);
   const [showNotes, setShowNotes] = useSetting<boolean>("card.showNotes", true);
   const [showFamily, setShowFamily] = useSetting<boolean>("card.showFamily", false);
+  const { t } = useTranslation();
 
   const items: [string, boolean, (v: boolean) => Promise<void>, string][] = [
-    ["Mostrar estadísticas", showStats, setShowStats, "Wins, races, posiciones."],
-    ["Mostrar notas", showNotes, setShowNotes, "Comentarios y observaciones."],
-    ["Mostrar familia", showFamily, setShowFamily, "Linaje resumido."],
+    [t("settings.show_stats"), showStats, setShowStats, t("settings.show_stats_desc")],
+    [t("settings.show_notes"), showNotes, setShowNotes, t("settings.show_notes_desc")],
+    [t("settings.show_family"), showFamily, setShowFamily, t("settings.show_family_desc")],
   ];
 
   return (
-    <SettingsShell title="Information Card Options" icon={IdCard} description="Layout de la ficha de paloma.">
+    <SettingsShell title={t("settings.card_title")} icon={IdCard} description={t("settings.card_desc")}>
       <div className="grid gap-3">
         {items.map(([label, val, on, desc]) => (
           <div key={label} className="flex items-center justify-between rounded-lg border p-3">

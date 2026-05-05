@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Trash2, Wand2, Mic, Square, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +42,7 @@ const emptyPigeon = (): Pigeon => ({
 export default function PigeonEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isNew = !id;
 
   const existing = useLiveQuery(() => (id ? db.pigeons.get(id) : undefined), [id]);
@@ -65,27 +67,27 @@ export default function PigeonEdit() {
       return;
     }
     const startedAt = Date.now();
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       setElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
     }, 500);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [wizard.recording]);
 
   async function startWizard() {
     if (!isSpeechSupported()) {
-      toast.error("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
+      toast.error(t("pigeon_edit.voice_unsupported"));
       return;
     }
     setWizardOpen(true);
     try {
       await wizard.start({
         onAutoStop: () => {
-          toast.message("Tiempo máximo (5 min) alcanzado. Procesando...");
+          toast.message(t("pigeon_edit.voice_max_time"));
           stopWizardAndApply();
         },
       });
     } catch (e: any) {
-      toast.error(e?.message || "No se pudo iniciar el micrófono");
+      toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
       setWizardOpen(false);
     }
   }
@@ -95,7 +97,7 @@ export default function PigeonEdit() {
     const text = res.transcript.trim();
     setWizardOpen(false);
     if (!text) {
-      toast.message("No se detectó voz");
+      toast.message(t("pigeon_edit.voice_no_voice"));
       return;
     }
     setWizardBusy(true);
@@ -125,13 +127,13 @@ export default function PigeonEdit() {
       }));
       const filled = Object.keys(parsed).length;
       if (filled === 0) {
-        toast.message("La IA no detectó campos claros. Revisa el texto en notas.");
+        toast.message(t("pigeon_edit.voice_no_fields"));
       } else {
-        toast.success(`Datos rellenados (${filled} campos)`);
+        toast.success(t("pigeon_edit.voice_filled", { count: filled }));
       }
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "No se pudo procesar la transcripción");
+      toast.error(e?.message || t("pigeon_edit.voice_process_error"));
       setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
     } finally {
       setWizardBusy(false);
@@ -141,22 +143,22 @@ export default function PigeonEdit() {
   // ---------------- Persistence ----------------
   async function handleSave() {
     if (!form.name.trim() && !form.ringNumber.trim()) {
-      toast.error("Necesitas al menos un nombre o un número de anilla");
+      toast.error(t("pigeon_edit.save_error_name_ring"));
       return;
     }
     const data: Pigeon = { ...form, updatedAt: Date.now() };
     await db.pigeons.put(data);
     await enqueueSync({ entity: "pigeon", op: isNew ? "create" : "update", payload: data });
-    toast.success(isNew ? "Paloma añadida" : "Cambios guardados");
+    toast.success(isNew ? t("pigeon_edit.save_created") : t("pigeon_edit.save_updated"));
     navigate(`/pigeons/${data.id}`);
   }
 
   async function handleDelete() {
     if (!id) return;
-    if (!confirm("¿Eliminar esta paloma?")) return;
+    if (!confirm(t("pigeon_edit.delete_confirm"))) return;
     await db.pigeons.delete(id);
     await enqueueSync({ entity: "pigeon", op: "delete", payload: { id } });
-    toast.success("Eliminada");
+    toast.success(t("pigeon_edit.deleted"));
     navigate("/pigeons");
   }
 
@@ -164,13 +166,13 @@ export default function PigeonEdit() {
     <div className="space-y-6">
       <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
         <Link to={isNew ? "/pigeons" : `/pigeons/${id}`}>
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("pigeon_edit.back")}
         </Link>
       </Button>
 
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">
-          {isNew ? "New pigeon" : "Edit pigeon"}
+          {isNew ? t("pigeon_edit.title_new") : t("pigeon_edit.title_edit")}
         </h1>
       </div>
 
@@ -179,13 +181,10 @@ export default function PigeonEdit() {
         <CardContent className="pt-6 space-y-3">
           <div className="flex items-center gap-2">
             <Wand2 className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold">Rellenar por voz (IA)</h2>
+            <h2 className="text-base font-semibold">{t("pigeon_edit.voice_title")}</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Dicta una nota natural en español o inglés. La IA separará los datos y los colocará en cada campo. Ejemplo:{" "}
-            <em>
-              "Apollo, macho, anilla BE 2024 1234567, color blue bar, palomar Main Loft, criador Van der Berg, criador, nacido en 2024".
-            </em>
+            {t("pigeon_edit.voice_desc")}
           </p>
 
           {wizardOpen && wizard.recording && (
@@ -196,7 +195,7 @@ export default function PigeonEdit() {
                 <span className="text-muted-foreground">{wizard.interim}</span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-                {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} (máx)
+                {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} ({t("pigeon_edit.voice_max")})
               </p>
             </div>
           )}
@@ -216,17 +215,17 @@ export default function PigeonEdit() {
               >
                 {wizardBusy ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Procesando con IA...
+                    <Loader2 className="h-4 w-4 animate-spin" /> {t("pigeon_edit.voice_processing")}
                   </>
                 ) : (
                   <>
-                    <Mic className="h-4 w-4" /> Empezar dictado
+                    <Mic className="h-4 w-4" /> {t("pigeon_edit.voice_start")}
                   </>
                 )}
               </Button>
             ) : (
               <Button type="button" variant="destructive" onClick={stopWizardAndApply} className="gap-2">
-                <Square className="h-4 w-4" /> Detener y rellenar
+                <Square className="h-4 w-4" /> {t("pigeon_edit.voice_stop")}
               </Button>
             )}
           </div>
@@ -236,10 +235,10 @@ export default function PigeonEdit() {
       {/* Form */}
       <Card>
         <CardContent className="pt-6 grid gap-4 sm:grid-cols-2">
-          <Field label="Name">
+          <Field label={t("pigeon_edit.field_name")}>
             <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Apollo" />
           </Field>
-          <Field label="Band number">
+          <Field label={t("pigeon_edit.field_band")}>
             <Input
               value={form.ringNumber}
               onChange={(e) => set("ringNumber", e.target.value)}
@@ -247,16 +246,16 @@ export default function PigeonEdit() {
             />
           </Field>
 
-          <Field label="Sex">
+          <Field label={t("pigeon_edit.field_sex")}>
             <Select value={form.sex} onValueChange={(v) => set("sex", v as Pigeon["sex"])}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="cock">♂ Cock</SelectItem>
-                <SelectItem value="hen">♀ Hen</SelectItem>
+                <SelectItem value="cock">{t("pigeon_detail.cock")}</SelectItem>
+                <SelectItem value="hen">{t("pigeon_detail.hen")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Born year">
+          <Field label={t("pigeon_edit.field_born")}>
             <Input
               type="number"
               inputMode="numeric"
@@ -266,35 +265,35 @@ export default function PigeonEdit() {
             />
           </Field>
 
-          <Field label="Status">
+          <Field label={t("pigeon_edit.field_status")}>
             <Select value={form.status} onValueChange={(v) => set("status", v as Pigeon["status"])}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="breeder">Breeder</SelectItem>
-                <SelectItem value="racer">Racer</SelectItem>
-                <SelectItem value="young">Young</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
+                <SelectItem value="breeder">{t("status.breeder")}</SelectItem>
+                <SelectItem value="racer">{t("status.racer")}</SelectItem>
+                <SelectItem value="young">{t("status.young")}</SelectItem>
+                <SelectItem value="lost">{t("status.lost")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Color">
+          <Field label={t("pigeon_edit.field_color")}>
             <Input value={form.color} onChange={(e) => set("color", e.target.value)} placeholder="Blue Bar" />
           </Field>
 
-          <Field label="Loft">
+          <Field label={t("pigeon_edit.field_loft")}>
             <Input value={form.loft} onChange={(e) => set("loft", e.target.value)} placeholder="Main Loft" />
           </Field>
-          <Field label="Breeder">
+          <Field label={t("pigeon_edit.field_breeder")}>
             <Input value={form.breeder} onChange={(e) => set("breeder", e.target.value)} placeholder="Van der Berg" />
           </Field>
 
           <div className="sm:col-span-2">
-            <Field label="Notes">
+            <Field label={t("pigeon_edit.field_notes")}>
               <Textarea
                 value={form.notes ?? ""}
                 onChange={(e) => set("notes", e.target.value)}
                 className="min-h-32"
-                placeholder="Observations, lineage, behaviour..."
+                placeholder={t("pigeon_edit.notes_placeholder")}
               />
             </Field>
           </div>
@@ -303,15 +302,15 @@ export default function PigeonEdit() {
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleSave} className="gap-2">
-          <Save className="h-4 w-4" /> {isNew ? "Create pigeon" : "Save changes"}
+          <Save className="h-4 w-4" /> {isNew ? t("pigeon_edit.btn_create") : t("pigeon_edit.btn_save")}
         </Button>
         {!isNew && (
           <Button variant="destructive" onClick={handleDelete} className="gap-2">
-            <Trash2 className="h-4 w-4" /> Delete
+            <Trash2 className="h-4 w-4" /> {t("pigeon_edit.btn_delete")}
           </Button>
         )}
         <Button asChild variant="outline">
-          <Link to={isNew ? "/pigeons" : `/pigeons/${id}`}>Cancel</Link>
+          <Link to={isNew ? "/pigeons" : `/pigeons/${id}`}>{t("pigeon_edit.btn_cancel")}</Link>
         </Button>
       </div>
     </div>
