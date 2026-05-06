@@ -7,10 +7,31 @@
     "my_pigeons": "My Pigeons",
     "create_new_pigeon": "Add Pigeon",
     "pedigree_scan": "Pedigree Scan",
+    "pedigree_scan_desc": "Scan a paper pedigree and let AI extract the data.",
+    "pedigree_scan_features": [
+      "Image / PDF upload",
+      "Ring recognition",
+      "Auto-link to pigeons",
+      "Confidence by field"
+    ],
     "statistics": "Statistics",
     "images": "Images",
     "public_pigeons": "Public Pigeons",
+    "public_pigeons_desc": "Browse pigeons shared by other fanciers.",
+    "public_pigeons_features": [
+      "Search by ring",
+      "Filters by country",
+      "Pedigree lookup",
+      "Contact owner"
+    ],
     "transfers": "Transfers",
+    "transfers_desc": "Manage incoming and outgoing transfers.",
+    "transfers_features": [
+      "Send to another fancier",
+      "Inbox",
+      "History",
+      "Documentation"
+    ],
     "breeding": "Breeding",
     "seasons": "Seasons",
     "pairs": "Pairs",
@@ -19,6 +40,13 @@
     "distance_calculator": "Distance Calc",
     "speed_calculator": "Speed Calc",
     "road_trainer": "Road Trainer",
+    "road_trainer_desc": "Plan road training sessions.",
+    "road_trainer_features": [
+      "Training calendar",
+      "Distance progression",
+      "Lost bird notes",
+      "Weather log"
+    ],
     "stations_group": "Locations",
     "stations": "Liberation Stations",
     "my_loft": "My Lofts",

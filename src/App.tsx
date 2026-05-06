@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,67 +37,71 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Index />} />
+const App = () => {
+  const { t } = useTranslation();
 
-              {/* Pigeons */}
-              <Route path="/pigeons" element={<Pigeons />} />
-              <Route path="/pigeons/new" element={<PigeonEdit />} />
-              <Route path="/pigeons/:id" element={<PigeonDetail />} />
-              <Route path="/pigeons/:id/edit" element={<PigeonEdit />} />
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/images" element={<Images />} />
-              <Route path="/pedigree-scan" element={<ComingSoonPage title="Pedigree Scan (AI)" description="Escanea un pedigree en papel y deja que la IA extraiga datos." icon={ScanLine} features={["Subida de imagen / PDF", "Reconocimiento de anillas", "Auto-vinculación a palomas", "Confianza por campo"]} />} />
-              <Route path="/public" element={<ComingSoonPage title="Public Pigeons" description="Explora palomas compartidas por otros aficionados." icon={Globe} features={["Búsqueda por anilla", "Filtros por país", "Lookup de pedigree", "Contactar dueño"]} />} />
-              <Route path="/transfers" element={<ComingSoonPage title="Transfers" description="Gestiona transferencias entrantes y salientes." icon={ArrowLeftRight} features={["Enviar a otro aficionado", "Bandeja de entrada", "Histórico", "Documentación"]} />} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<Index />} />
 
-              {/* Breeding */}
-              <Route path="/seasons" element={<Seasons />} />
-              <Route path="/pairs" element={<Pairs />} />
+                {/* Pigeons */}
+                <Route path="/pigeons" element={<Pigeons />} />
+                <Route path="/pigeons/new" element={<PigeonEdit />} />
+                <Route path="/pigeons/:id" element={<PigeonDetail />} />
+                <Route path="/pigeons/:id/edit" element={<PigeonEdit />} />
+                <Route path="/statistics" element={<Statistics />} />
+                <Route path="/images" element={<Images />} />
+                <Route path="/pedigree-scan" element={<ComingSoonPage title={t('sidebar.pedigree_scan')} description={t('sidebar.pedigree_scan_desc')} icon={ScanLine} features={t('sidebar.pedigree_scan_features', { returnObjects: true }) as string[]} />} />
+                <Route path="/public" element={<ComingSoonPage title={t('sidebar.public_pigeons')} description={t('sidebar.public_pigeons_desc')} icon={Globe} features={t('sidebar.public_pigeons_features', { returnObjects: true }) as string[]} />} />
+                {/* <Route path="/transfers" element={<ComingSoonPage title={t('sidebar.transfers')} description={t('sidebar.transfers_desc')} icon={ArrowLeftRight} features={t('sidebar.transfers_features', { returnObjects: true }) as string[]} />} /> */}
 
-              {/* Teams & Contacts */}
-              <Route path="/teams" element={<Teams />} />
-              <Route path="/contacts" element={<Contacts />} />
+                {/* Breeding */}
+                <Route path="/seasons" element={<Seasons />} />
+                <Route path="/pairs" element={<Pairs />} />
 
-              {/* Racing */}
-              <Route path="/races" element={<Races />} />
-              <Route path="/distance" element={<DistanceCalc />} />
-              <Route path="/speed" element={<SpeedCalc />} />
-              <Route path="/trainer" element={<ComingSoonPage title="Road Trainer" description="Planifica entrenamientos por carretera." icon={Radio} features={["Calendario de sueltas", "Progresión de distancia", "Notas de aves perdidas", "Registro meteorológico"]} />} />
+                {/* Teams & Contacts */}
+                <Route path="/teams" element={<Teams />} />
+                <Route path="/contacts" element={<Contacts />} />
 
-              {/* Stations */}
-              <Route path="/stations" element={<Stations />} />
-              <Route path="/loft" element={<MyLoft />} />
+                {/* Racing */}
+                <Route path="/races" element={<Races />} />
+                <Route path="/distance" element={<DistanceCalc />} />
+                <Route path="/speed" element={<SpeedCalc />} />
+                <Route path="/trainer" element={<ComingSoonPage title={t('sidebar.road_trainer')} description={t('sidebar.road_trainer_desc')} icon={Radio} features={t('sidebar.road_trainer_features', { returnObjects: true }) as string[]} />} />
 
-              {/* Journals */}
-              <Route path="/journal" element={<Journal />} />
-              <Route path="/medications" element={<Medications />} />
-              <Route path="/comments/pigeon" element={<CommentsPage target="pigeon" title="Pigeon Comments" />} />
-              <Route path="/comments/pair" element={<CommentsPage target="pair" title="Pair Comments" />} />
-              <Route path="/comments/team" element={<CommentsPage target="team" title="Team Comments" />} />
+                {/* Stations */}
+                <Route path="/stations" element={<Stations />} />
+                <Route path="/loft" element={<MyLoft />} />
 
-              {/* Settings */}
-              <Route path="/settings/general" element={<GeneralSettings />} />
-              <Route path="/settings/pedigree" element={<PedigreeSettings />} />
-              <Route path="/settings/card" element={<CardSettings />} />
-              <Route path="/settings/bands" element={<Bands />} />
-              <Route path="/settings/autocomplete" element={<Autocomplete />} />
-              <Route path="/settings/filters" element={<Filters />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+                {/* Journals */}
+                <Route path="/journal" element={<Journal />} />
+                <Route path="/medications" element={<Medications />} />
+                <Route path="/comments/pigeon" element={<CommentsPage target="pigeon" title={t('sidebar.pigeon_comments')} />} />
+                <Route path="/comments/pair" element={<CommentsPage target="pair" title={t('sidebar.pair_comments')} />} />
+                <Route path="/comments/team" element={<CommentsPage target="team" title={t('sidebar.team_comments')} />} />
+
+                {/* Settings */}
+                <Route path="/settings/general" element={<GeneralSettings />} />
+                <Route path="/settings/pedigree" element={<PedigreeSettings />} />
+                <Route path="/settings/card" element={<CardSettings />} />
+                <Route path="/settings/bands" element={<Bands />} />
+                <Route path="/settings/autocomplete" element={<Autocomplete />} />
+                <Route path="/settings/filters" element={<Filters />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

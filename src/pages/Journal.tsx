@@ -7,7 +7,7 @@ export default function Journal() {
   const { t } = useTranslation();
   return (
     <CrudPage<JournalEntry>
-      title={t("sidebar.journal")}
+      title={t("sidebar.daily_journal")}
       description={t("crud_pages.journal.desc")}
       icon={BookOpen}
       table={db.journal}
