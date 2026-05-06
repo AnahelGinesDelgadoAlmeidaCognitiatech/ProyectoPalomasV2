@@ -16,7 +16,8 @@ import { db, enqueueSync, removeAndSync, uid, type SyncEntity } from "@/lib/db";
 
 export type FieldDef =
   | { name: string; label: string; type?: "text" | "number" | "date"; placeholder?: string; required?: boolean; full?: boolean }
-  | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean };
+  | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean }
+  | { name: string; label: string; type: "custom"; render: (value: any, onChange: (val: any) => void) => React.ReactNode; full?: boolean };
 
 interface Props<T> {
   title: string;
@@ -103,10 +104,12 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
                     <Label className="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</Label>
                     {f.type === "textarea" ? (
                       <Textarea
-                        value={editing[f.name] ?? ""}
-                        onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })}
-                        placeholder={f.placeholder}
-                      />
+                         value={editing[f.name] ?? ""}
+                         onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })}
+                         placeholder={f.placeholder}
+                       />
+                    ) : f.type === "custom" ? (
+                      f.render(editing[f.name], (val) => setEditing({ ...editing, [f.name]: val }))
                     ) : (
                       <Input
                         type={f.type === "number" ? "number" : f.type === "date" ? "date" : "text"}

@@ -287,6 +287,23 @@ export default function PigeonEdit() {
             <Input value={form.breeder} onChange={(e) => set("breeder", e.target.value)} placeholder="Van der Berg" />
           </Field>
 
+          <Field label={t("pigeon_edit.field_father")}>
+            <PigeonParentSelect
+              sex="cock"
+              value={form.fatherId}
+              currentId={id}
+              onChange={(val) => set("fatherId", val)}
+            />
+          </Field>
+          <Field label={t("pigeon_edit.field_mother")}>
+            <PigeonParentSelect
+              sex="hen"
+              value={form.motherId}
+              currentId={id}
+              onChange={(val) => set("motherId", val)}
+            />
+          </Field>
+
           <div className="sm:col-span-2">
             <Field label={t("pigeon_edit.field_notes")}>
               <Textarea
@@ -330,4 +347,38 @@ function formatTime(totalSec: number) {
   const m = Math.floor(totalSec / 60);
   const s = Math.floor(totalSec % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function PigeonParentSelect({ 
+  sex, 
+  value, 
+  currentId, 
+  onChange 
+}: { 
+  sex: "cock" | "hen"; 
+  value?: string; 
+  currentId?: string; 
+  onChange: (val: string | undefined) => void 
+}) {
+  const { t } = useTranslation();
+  const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+
+  // Filter by sex and exclude the current pigeon being edited
+  const filtered = allPigeons.filter(p => p.sex === sex && p.id !== currentId);
+
+  return (
+    <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? undefined : v)}>
+      <SelectTrigger>
+        <SelectValue placeholder={t("pedigree_tree.unknown")} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">{t("pedigree_tree.unknown")}</SelectItem>
+        {filtered.map((p) => (
+          <SelectItem key={p.id} value={p.id}>
+            {p.name || "—"} <span className="text-[10px] text-muted-foreground ml-1">({p.ringNumber})</span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }

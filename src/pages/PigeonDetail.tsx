@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PedigreeTree } from "@/components/PedigreeTree";
 import { db } from "@/lib/db";
+import { calculateCOI } from "@/lib/genetics";
+import { toast } from "sonner";
 
 export default function PigeonDetail() {
   const { id } = useParams();
@@ -39,9 +41,7 @@ export default function PigeonDetail() {
      (pigeon.motherId && p.motherId === pigeon.motherId && p.fatherId !== pigeon.fatherId))
   );
 
-  const inbreeding = pigeon.fatherId && pigeon.motherId
-    ? (Math.random() * 6 + 0.1).toFixed(2)
-    : "0.00";
+  const inbreeding = calculateCOI(pigeon, allPigeons).toFixed(2);
 
   const rating = (pigeon.wins ?? 0) * 8 + 30;
 
@@ -143,7 +143,14 @@ export default function PigeonDetail() {
                 <p className="text-3xl font-bold text-primary">{inbreeding}%</p>
                 <p className="text-xs text-muted-foreground">{t("pigeon_detail.calc_5_gen")}</p>
               </div>
-              <Button variant="outline">{t("pigeon_detail.recalculate")}</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  toast.success(t("pigeon_detail.recalculate_success") || "Cálculo actualizado");
+                }}
+              >
+                {t("pigeon_detail.recalculate")}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

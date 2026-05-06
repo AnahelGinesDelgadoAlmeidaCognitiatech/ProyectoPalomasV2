@@ -1,7 +1,8 @@
-import { MapPinned } from "lucide-react";
+import { MapPinned, MapPin, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CrudPage } from "@/components/CrudPage";
 import { db, type Station } from "@/lib/db";
+import { Button } from "@/components/ui/button";
 
 export default function Stations() {
   const { t } = useTranslation();
@@ -20,14 +21,72 @@ export default function Stations() {
         { name: "lng", label: t("crud_pages.stations.field_lng"), type: "number", placeholder: "2.1734" },
         { name: "notes", label: t("crud_pages.stations.field_notes"), type: "textarea", full: true },
       ]}
-      renderItem={(s) => (
-        <div>
-          <p className="font-semibold">{s.name} {s.country && <span className="text-muted-foreground font-normal">· {s.country}</span>}</p>
-          <p className="text-xs text-muted-foreground">
-            {s.lat != null && s.lng != null ? `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}` : t("crud_pages.stations.no_coords")}
-          </p>
+      renderItem={(s) => <StationItem station={s} />}
+    />
+  );
+}
+
+function StationItem({ station }: { station: Station }) {
+  const { t } = useTranslation();
+  const hasCoords = station.lat != null && station.lng != null;
+
+  const openInGoogleMaps = () => {
+    if (hasCoords) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`, "_blank");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex-1 space-y-1">
+        <p className="font-semibold text-lg">
+          {station.name} 
+          {station.country && <span className="text-muted-foreground font-normal ml-1.5 text-sm">· {station.country}</span>}
+        </p>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <MapPin className="h-3 w-3" />
+          {hasCoords ? (
+            <span>{station.lat?.toFixed(6)}, {station.lng?.toFixed(6)}</span>
+          ) : (
+            <span>{t("crud_pages.stations.no_coords")}</span>
+          )}
+        </div>
+        {station.notes && (
+          <p className="text-sm text-muted-foreground italic line-clamp-1 mt-1">{station.notes}</p>
+        )}
+        
+        {hasCoords && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2 h-7 gap-1.5 text-[10px] uppercase tracking-wider font-bold"
+            onClick={openInGoogleMaps}
+          >
+            <ExternalLink className="h-3 w-3" />
+            Google Maps
+          </Button>
+        )}
+      </div>
+
+      {hasCoords && (
+        <div className="relative h-24 w-full sm:w-40 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
+          <iframe
+            title={`Map of ${station.name}`}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            style={{ border: 0, pointerEvents: "none" }}
+            srcDoc={`
+              <style>body{margin:0;overflow:hidden}iframe{border:0}</style>
+              <iframe 
+                width="100%" 
+                height="100%" 
+                src="https://maps.google.com/maps?q=${station.lat},${station.lng}&z=15&t=k&output=embed">
+              </iframe>
+            `}
+          />
         </div>
       )}
-    />
+    </div>
   );
 }
