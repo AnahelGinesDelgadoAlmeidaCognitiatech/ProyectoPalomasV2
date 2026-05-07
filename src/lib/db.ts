@@ -34,8 +34,11 @@ export interface Pair {
   id: string;
   cockId?: string;
   henId?: string;
-  season: string; // "2024"
+  seasonId: string; // Reference to Season.id
   nestBox?: string;
+  startDate?: string; // ISO date
+  endDate?: string;   // ISO date
+  status: "active" | "separated" | "resting";
   notes?: string;
   createdAt: number;
   updatedAt: number;
@@ -223,9 +226,9 @@ class PigeonDexie extends Dexie {
       pigeons: "id, ringNumber, name, status, loft, bornYear, fatherId, motherId, updatedAt",
       syncQueue: "++id, entity, op, syncedAt, createdAt",
     });
-    this.version(2).stores({
+    this.version(3).stores({
       pigeons: "id, ringNumber, name, status, loft, bornYear, fatherId, motherId, updatedAt",
-      pairs: "id, season, cockId, henId, updatedAt",
+      pairs: "id, seasonId, cockId, henId, updatedAt",
       seasons: "id, year, updatedAt",
       races: "id, date, stationId, updatedAt",
       teams: "id, name, updatedAt",

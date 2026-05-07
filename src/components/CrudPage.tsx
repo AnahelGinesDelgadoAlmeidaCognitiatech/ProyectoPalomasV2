@@ -32,12 +32,17 @@ interface Props<T> {
   defaults?: () => Partial<T>;
   /** custom validation */
   validate?: (item: any) => string | null;
+  /** custom query for the list */
+  query?: () => Promise<T[]>;
 }
 
 export function CrudPage<T extends { id: string; createdAt: number; updatedAt: number }>({
-  title, description, icon: Icon, table, entity, fields, renderItem, defaults, validate,
+  title, description, icon: Icon, table, entity, fields, renderItem, defaults, validate, query,
 }: Props<T>) {
-  const items = useLiveQuery(() => table.orderBy("updatedAt").reverse().toArray(), []) ?? [];
+  const items = useLiveQuery(
+    () => (query ? query() : table.orderBy("updatedAt").reverse().toArray()),
+    [query]
+  ) ?? [];
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const { t } = useTranslation();

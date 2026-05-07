@@ -64,6 +64,7 @@ const App = () => {
 
                 {/* Breeding */}
                 <Route path="/seasons" element={<Seasons />} />
+                <Route path="/seasons/:seasonId/pairs" element={<Pairs />} />
                 <Route path="/pairs" element={<Pairs />} />
 
                 {/* Teams & Contacts */}

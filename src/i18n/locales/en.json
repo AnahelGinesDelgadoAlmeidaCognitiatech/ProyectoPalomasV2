@@ -84,6 +84,7 @@
     "language": "Language",
     "spanish": "Español",
     "english": "English",
+    "portuguese": "Portuguese",
     "default_loft": "Default loft",
     "pedigree_title": "Pedigree",
     "pedigree_desc": "Family tree and PDF export settings.",
@@ -239,6 +240,27 @@
     "btn_save": "Save changes",
     "btn_delete": "Delete",
     "btn_cancel": "Cancel"
+  },
+  "seasons": {
+    "view_pairs": "View pairs"
+  },
+  "pairs": {
+    "pair": "Pair",
+    "select_pigeon": "Select pigeon",
+    "none": "None",
+    "back_to_seasons": "Back to seasons",
+    "season_desc": "Pairs formed during this season",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "status_active": "Active",
+    "status_separated": "Separated",
+    "status_resting": "Resting",
+    "present": "Present",
+    "calculate_coi": "Calculate hypothetical inbreeding",
+    "coi_calculated": "COI calculated successfully",
+    "error_need_both_parents": "You need to select both parents to calculate COI",
+    "error_cock_busy": "Cock {{name}} is already in an active pair with {{partner}} during this period.",
+    "error_hen_busy": "Hen {{name}} is already in an active pair with {{partner}} during this period."
   },
   "pedigree_tree": {
     "unknown": "Unknown"
@@ -428,7 +450,10 @@
     "win_rate": "Win rate",
     "total_races": "Registered races",
     "by_status": "By status",
+    "status_distribution_desc": "Current distribution of pigeons by their status",
     "by_year": "By birth year",
+    "year_distribution_desc": "Number of pigeons born each year",
+    "pigeons": "Pigeons",
     "no_data": "No data."
   },
   "images": {

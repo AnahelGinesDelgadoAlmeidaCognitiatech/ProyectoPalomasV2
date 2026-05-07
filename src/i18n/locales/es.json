@@ -84,6 +84,7 @@
     "language": "Idioma",
     "spanish": "Español",
     "english": "English",
+    "portuguese": "Portugués",
     "default_loft": "Palomar por defecto",
     "pedigree_title": "Pedigrí",
     "pedigree_desc": "Configuración del árbol genealógico y exportación PDF.",
@@ -239,6 +240,27 @@
     "btn_save": "Guardar cambios",
     "btn_delete": "Eliminar",
     "btn_cancel": "Cancelar"
+  },
+  "seasons": {
+    "view_pairs": "Ver parejas"
+  },
+  "pairs": {
+    "pair": "Pareja",
+    "select_pigeon": "Seleccionar paloma",
+    "none": "Ninguna",
+    "back_to_seasons": "Volver a temporadas",
+    "season_desc": "Parejas formadas en esta temporada",
+    "start_date": "Fecha Inicio",
+    "end_date": "Fecha Fin",
+    "status_active": "Activa",
+    "status_separated": "Separada",
+    "status_resting": "En descanso",
+    "present": "Presente",
+    "calculate_coi": "Calcular consanguinidad hipotética",
+    "coi_calculated": "Consanguinidad calculada con éxito",
+    "error_need_both_parents": "Necesitas seleccionar ambos padres para calcular el COI",
+    "error_cock_busy": "El macho {{name}} ya tiene una pareja activa con {{partner}} en este periodo.",
+    "error_hen_busy": "La hembra {{name}} ya tiene una pareja activa con {{partner}} en este periodo."
   },
   "pedigree_tree": {
     "unknown": "Desconocido"
@@ -428,7 +450,10 @@
     "win_rate": "% victoria",
     "total_races": "Carreras registradas",
     "by_status": "Por estado",
+    "status_distribution_desc": "Distribución actual de las palomas por su estado",
     "by_year": "Por año de nacimiento",
+    "year_distribution_desc": "Cantidad de palomas nacidas por cada año",
+    "pigeons": "Palomas",
     "no_data": "Sin datos."
   },
   "images": {

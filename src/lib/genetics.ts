@@ -2,17 +2,31 @@ import { type Pigeon } from "./db";
 
 /**
  * Calculates the Coefficient of Inbreeding (COI) for a pigeon.
- * Uses a simplified Wright's Path Method.
- * 
- * @param target The pigeon to calculate for.
- * @param allPigeons All pigeons in the database for lookups.
- * @param maxDepth How many generations to go back (default 5).
  */
 export function calculateCOI(target: Pigeon, allPigeons: Pigeon[], maxDepth = 5): number {
   if (!target.fatherId || !target.motherId) return 0;
+  return calculateHypotheticalCOI(target.fatherId, target.motherId, allPigeons, maxDepth);
+}
 
-  const fatherAncestors = getAncestorsWithDepth(target.fatherId, allPigeons, maxDepth);
-  const motherAncestors = getAncestorsWithDepth(target.motherId, allPigeons, maxDepth);
+/**
+ * Calculates the hypothetical COI for potential offspring of two parents.
+ * Uses Wright's Path Method.
+ * 
+ * @param fatherId ID of the sire
+ * @param motherId ID of the dam
+ * @param allPigeons All pigeons in the database
+ * @param maxDepth How many generations to go back (default 10).
+ */
+export function calculateHypotheticalCOI(
+  fatherId: string | undefined, 
+  motherId: string | undefined, 
+  allPigeons: Pigeon[], 
+  maxDepth = 10
+): number {
+  if (!fatherId || !motherId) return 0;
+
+  const fatherAncestors = getAncestorsWithDepth(fatherId, allPigeons, maxDepth);
+  const motherAncestors = getAncestorsWithDepth(motherId, allPigeons, maxDepth);
 
   let coi = 0;
 

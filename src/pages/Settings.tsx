@@ -69,6 +69,7 @@ export function GeneralSettings() {
             <SelectContent>
               <SelectItem value="es">{t("settings.spanish")}</SelectItem>
               <SelectItem value="en">{t("settings.english")}</SelectItem>
+              <SelectItem value="pt">{t("settings.portuguese")}</SelectItem>
             </SelectContent>
           </Select>
         </Field>

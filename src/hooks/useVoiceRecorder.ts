@@ -95,14 +95,6 @@ export function useVoiceRecorder(lang = "es-ES") {
         throw new Error(msg);
       }
       streamRef.current = stream;
-      try {
-        const mr = new MediaRecorder(stream);
-        mediaRecorderRef.current = mr;
-        mr.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
-        mr.start();
-      } catch {
-        mediaRecorderRef.current = null;
-      }
 
       const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (Ctor) {
@@ -129,12 +121,15 @@ export function useVoiceRecorder(lang = "es-ES") {
           }
         };
         rec.onend = () => {
-          if (mediaRecorderRef.current?.state === "recording") {
+          // If we are still recording, restart the service if it stops
+          if (streamRef.current?.active) {
             try { rec.start(); } catch {}
           }
         };
         recognitionRef.current = rec;
-        try { rec.start(); } catch {}
+        try { rec.start(); } catch (e) {
+          console.error("Speech recognition start error:", e);
+        }
       }
 
       setRecording(true);
@@ -149,25 +144,27 @@ export function useVoiceRecorder(lang = "es-ES") {
 
   const stop = useCallback(async (): Promise<VoiceResult> => {
     setRecording(false);
+    
     return new Promise((resolve) => {
-      const mr = mediaRecorderRef.current;
       const finish = () => {
-        const blob = chunksRef.current.length
-          ? new Blob(chunksRef.current, { type: mr?.mimeType || "audio/webm" })
-          : undefined;
         const durationSec = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
+        const finalTranscript = `${finalRef.current} ${interim}`.trim();
         cleanup();
-        resolve({ transcript: finalRef.current.trim(), audioBlob: blob, durationSec });
+        resolve({ transcript: finalTranscript, durationSec });
       };
-      try { recognitionRef.current?.stop?.(); } catch {}
-      if (mr && mr.state === "recording") {
-        mr.onstop = finish;
-        mr.stop();
-      } else {
-        finish();
+
+      try { 
+        if (recognitionRef.current) {
+          recognitionRef.current.onend = null;
+          recognitionRef.current.stop(); 
+        }
+      } catch (e) {
+        console.error("Error stopping recognition:", e);
       }
+
+      finish();
     });
-  }, [cleanup]);
+  }, [cleanup, interim]);
 
   return { recording, interim, finalText, error, start, stop };
 }

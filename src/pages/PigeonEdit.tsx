@@ -56,7 +56,9 @@ export default function PigeonEdit() {
     setForm((f) => ({ ...f, [k]: v }));
 
   // ---------------- Voice wizard ----------------
-  const wizard = useVoiceRecorder("es-ES");
+  const { i18n } = useTranslation();
+  const voiceLang = i18n.language === "pt" ? "pt-PT" : i18n.language === "en" ? "en-US" : "es-ES";
+  const wizard = useVoiceRecorder(voiceLang);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
@@ -103,7 +105,10 @@ export default function PigeonEdit() {
     setWizardBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("parse-pigeon", {
-        body: { transcript: text },
+        body: { 
+          transcript: text,
+          language: i18n.language
+        },
       });
       if (error) throw error;
       const parsed = (data?.fields ?? {}) as Partial<Pigeon>;
