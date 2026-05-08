@@ -17,6 +17,7 @@ import PigeonEdit from "./pages/PigeonEdit";
 import Pairs from "./pages/Pairs";
 import Seasons from "./pages/Seasons";
 import Races from "./pages/Races";
+import RaceDetail from "./pages/RaceDetail";
 import Teams from "./pages/Teams";
 import Contacts from "./pages/Contacts";
 import Stations from "./pages/Stations";
@@ -73,6 +74,7 @@ const App = () => {
 
                 {/* Racing */}
                 <Route path="/races" element={<Races />} />
+                <Route path="/races/:id" element={<RaceDetail />} />
                 <Route path="/distance" element={<DistanceCalc />} />
                 <Route path="/speed" element={<SpeedCalc />} />
                 <Route path="/trainer" element={<ComingSoonPage title={t('sidebar.road_trainer')} description={t('sidebar.road_trainer_desc')} icon={Radio} features={t('sidebar.road_trainer_features', { returnObjects: true }) as string[]} />} />

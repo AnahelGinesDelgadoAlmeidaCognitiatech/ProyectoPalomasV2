@@ -41,6 +41,8 @@ export default function PigeonDetail() {
      (pigeon.motherId && p.motherId === pigeon.motherId && p.fatherId !== pigeon.fatherId))
   );
 
+  const parents = allPigeons.filter((p) => p.id === pigeon.fatherId || p.id === pigeon.motherId);
+
   const inbreeding = calculateCOI(pigeon, allPigeons).toFixed(2);
 
   const rating = (pigeon.wins ?? 0) * 8 + 30;
@@ -261,6 +263,7 @@ export default function PigeonDetail() {
         </TabsContent>
 
         <TabsContent value="related" className="mt-6 space-y-6">
+          <RelatedGroup title={t("pigeon_detail.parents")} items={parents} />
           <RelatedGroup title={t("pigeon_detail.children")} items={children} />
           <RelatedGroup title={t("pigeon_detail.full_siblings")} items={fullSiblings} />
           <RelatedGroup title={t("pigeon_detail.half_siblings_sire")} items={halfSiblings.filter((p) => p.fatherId === pigeon.fatherId)} />

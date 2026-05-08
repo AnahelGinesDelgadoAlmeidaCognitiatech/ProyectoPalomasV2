@@ -56,11 +56,33 @@ export interface Season {
 export interface Race {
   id: string;
   name: string;
+  type?: string; // Race Type
   date: string; // ISO yyyy-mm-dd
+  clubName?: string;
+  clubNumber?: string;
+  clubLocation?: string;
+  combineName?: string;
   stationId?: string;
+  releasePointName?: string;
+  releasePointLat?: number;
+  releasePointLng?: number;
+  teamId?: string;
+  destPointName?: string;
+  destPointLat?: number;
+  destPointLng?: number;
+  pigeonIds?: string[]; // Individual pigeons entered
   distanceKm?: number;
+  distanceMiles?: number;
   totalBirds?: number;
+  totalLofts?: number;
   liberationTime?: string;
+  releaseTemp?: string;
+  releaseWeather?: string;
+  releaseOther?: string;
+  destTemp?: string;
+  destWeather?: string;
+  destOther?: string;
+  archived?: boolean;
   notes?: string;
   results?: { pigeonId: string; arrivalTime?: string; position?: number; speed?: number }[];
   createdAt: number;
