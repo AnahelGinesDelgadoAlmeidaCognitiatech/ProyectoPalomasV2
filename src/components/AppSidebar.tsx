@@ -108,7 +108,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.pathname === "/"}>
-                  <NavLink to="/" end>
+                  <NavLink to="/" end onClick={handleNav}>
                     <LayoutDashboard className="h-4 w-4" />
                     <span>{t("sidebar.dashboard")}</span>
                   </NavLink>
@@ -116,7 +116,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/contacts")}>
-                  <NavLink to="/contacts">
+                  <NavLink to="/contacts" onClick={handleNav}>
                     <Contact2 className="h-4 w-4" />
                     <span>{t("sidebar.contacts")}</span>
                   </NavLink>
@@ -124,7 +124,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/teams")}>
-                  <NavLink to="/teams">
+                  <NavLink to="/teams" onClick={handleNav}>
                     <Users className="h-4 w-4" />
                     <span>{t("sidebar.teams")}</span>
                   </NavLink>
