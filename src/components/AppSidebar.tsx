@@ -150,7 +150,7 @@ export function AppSidebar() {
                     {g.items.map((item) => (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton asChild isActive={isActive(item.url)} size="sm">
-                          <NavLink to={item.url}>
+                          <NavLink to={item.url} onClick={handleNav}>
                             <item.icon className="h-4 w-4" />
                             <span className="flex-1">{t(item.titleKey)}</span>
                             {item.badge && (
