@@ -72,10 +72,14 @@ const groups: Group[] = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { t } = useTranslation();
+
+  const handleNav = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname === path || location.pathname.startsWith(path + "/");
@@ -104,7 +108,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location.pathname === "/"}>
-                  <NavLink to="/" end>
+                  <NavLink to="/" end onClick={handleNav}>
                     <LayoutDashboard className="h-4 w-4" />
                     <span>{t("sidebar.dashboard")}</span>
                   </NavLink>
@@ -112,7 +116,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/contacts")}>
-                  <NavLink to="/contacts">
+                  <NavLink to="/contacts" onClick={handleNav}>
                     <Contact2 className="h-4 w-4" />
                     <span>{t("sidebar.contacts")}</span>
                   </NavLink>
@@ -120,7 +124,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/teams")}>
-                  <NavLink to="/teams">
+                  <NavLink to="/teams" onClick={handleNav}>
                     <Users className="h-4 w-4" />
                     <span>{t("sidebar.teams")}</span>
                   </NavLink>
@@ -146,7 +150,7 @@ export function AppSidebar() {
                     {g.items.map((item) => (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton asChild isActive={isActive(item.url)} size="sm">
-                          <NavLink to={item.url}>
+                          <NavLink to={item.url} onClick={handleNav}>
                             <item.icon className="h-4 w-4" />
                             <span className="flex-1">{t(item.titleKey)}</span>
                             {item.badge && (
