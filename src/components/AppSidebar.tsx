@@ -72,10 +72,14 @@ const groups: Group[] = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { t } = useTranslation();
+
+  const handleNav = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname === path || location.pathname.startsWith(path + "/");
