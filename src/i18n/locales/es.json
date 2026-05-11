@@ -539,5 +539,19 @@
   "not_found": {
     "title": "Oops! Página no encontrada",
     "return": "Volver al inicio"
+  },
+  "voice_input": {
+    "loading_model": "Cargando modelo Whisper...",
+    "ready": "Listo",
+    "recording": "Grabando...",
+    "transcribing": "Transcribiendo...",
+    "record": "Grabar",
+    "stop": "Detener",
+    "upload": "Subir audio",
+    "error_browser": "Tu navegador no soporta grabación de audio",
+    "error_permission": "Permiso de micrófono denegado. Actívalo en los ajustes del navegador.",
+    "error_no_mic": "No se detectó ningún micrófono.",
+    "error_mic": "No se pudo acceder al micrófono.",
+    "error_generic": "Error al transcribir"
   }
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Trash2, Wand2, Mic, Square, Loader2 } from "lucide-react";
+import { VoiceInput } from "@/components/VoiceInput";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,8 @@ import {
 } from "@/components/ui/select";
 
 import { db, enqueueSync, uid, type Pigeon } from "@/lib/db";
-import { useVoiceRecorder, MAX_RECORDING_MS, isSpeechSupported } from "@/hooks/useVoiceRecorder";
+import { useWhisperTranscription } from "@/hooks/useWhisperTranscription";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { supabase } from "@/integrations/supabase/client";
 
 const emptyPigeon = (): Pigeon => ({
@@ -55,16 +57,17 @@ export default function PigeonEdit() {
   const set = <K extends keyof Pigeon>(k: K, v: Pigeon[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // ---------------- Voice wizard ----------------
+  // ---------------- Voice assistant (Local Whisper) ----------------
   const { i18n } = useTranslation();
-  const voiceLang = i18n.language === "pt" ? "pt-PT" : i18n.language === "en" ? "en-US" : "es-ES";
-  const wizard = useVoiceRecorder(voiceLang);
+  const { transcribe, transcribing, status } = useWhisperTranscription();
+  const { recording, start: startRec, stop: stopRec, error: recError } = useAudioRecorder();
+  
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
 
   useEffect(() => {
-    if (!wizard.recording) {
+    if (!recording) {
       setElapsedSec(0);
       return;
     }
@@ -73,21 +76,12 @@ export default function PigeonEdit() {
       setElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
     }, 500);
     return () => clearInterval(timer);
-  }, [wizard.recording]);
+  }, [recording]);
 
   async function startWizard() {
-    if (!isSpeechSupported()) {
-      toast.error(t("pigeon_edit.voice_unsupported"));
-      return;
-    }
     setWizardOpen(true);
     try {
-      await wizard.start({
-        onAutoStop: () => {
-          toast.message(t("pigeon_edit.voice_max_time"));
-          stopWizardAndApply();
-        },
-      });
+      await startRec();
     } catch (e: any) {
       toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
       setWizardOpen(false);
@@ -95,15 +89,23 @@ export default function PigeonEdit() {
   }
 
   async function stopWizardAndApply() {
-    const res = await wizard.stop();
-    const text = res.transcript.trim();
-    setWizardOpen(false);
-    if (!text) {
-      toast.message(t("pigeon_edit.voice_no_voice"));
+    let blob: Blob;
+    try {
+      blob = await stopRec();
+    } catch (e) {
+      setWizardOpen(false);
       return;
     }
+
     setWizardBusy(true);
     try {
+      const text = await transcribe(blob);
+      if (!text) {
+        toast.message(t("pigeon_edit.voice_no_voice"));
+        setWizardOpen(false);
+        return;
+      }
+      setWizardOpen(false);
       const { data, error } = await supabase.functions.invoke("parse-pigeon", {
         body: { 
           transcript: text,
@@ -192,35 +194,43 @@ export default function PigeonEdit() {
             {t("pigeon_edit.voice_desc")}
           </p>
 
-          {wizardOpen && wizard.recording && (
+          {wizardOpen && recording && (
             <div className="rounded-md bg-background border p-3 text-sm">
               <p>
                 <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-destructive align-middle" />
-                {wizard.finalText}{" "}
-                <span className="text-muted-foreground">{wizard.interim}</span>
+                {t("voice_input.recording")}...
               </p>
               <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-                {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} ({t("pigeon_edit.voice_max")})
+                {formatTime(elapsedSec)}
               </p>
             </div>
           )}
-          {wizard.error && !wizard.recording && (
+          {(recError || status === "error") && (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
-              {wizard.error}
+              {recError || t("voice_input.error_generic")}
             </p>
           )}
 
           <div>
-            {!wizard.recording ? (
+            {!recording ? (
               <Button
                 type="button"
                 onClick={startWizard}
-                disabled={wizardBusy}
+                disabled={wizardBusy || transcribing || status === "loading"}
                 className="gap-2"
               >
-                {wizardBusy ? (
+                {status === "loading" ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> {t("pigeon_edit.voice_processing")}
+                    <Loader2 className="h-4 w-4 animate-spin" /> 
+                    {t("pigeon_edit.voice_processing")} ({Math.round(loadingProgress)}%)
+                  </>
+                ) : transcribing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> {t("voice_input.transcribing")}...
+                  </>
+                ) : wizardBusy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> {t("pigeon_edit.voice_processing")} (IA)
                   </>
                 ) : (
                   <>
@@ -316,6 +326,12 @@ export default function PigeonEdit() {
                 onChange={(e) => set("notes", e.target.value)}
                 className="min-h-32"
                 placeholder={t("pigeon_edit.notes_placeholder")}
+              />
+              <VoiceInput
+                className="mt-1.5"
+                onTranscript={(text) =>
+                  set("notes", form.notes ? `${form.notes} ${text}` : text)
+                }
               />
             </Field>
           </div>

@@ -308,28 +308,34 @@ export async function seedIfEmpty() {
   const count = await db.pigeons.count();
   if (count === 0) {
     const { pigeons: seed } = await import("@/data/pigeons");
+    const { 
+      mockSeasons, mockPairs, mockRaces, mockTeams, 
+      mockContacts, mockStations, mockLofts, mockJournal, 
+      mockMedications, mockBands 
+    } = await import("@/data/mockData");
+    
     const now = Date.now();
+
+    // Pigeons
     await db.pigeons.bulkAdd(
       seed.map((p) => ({
-        id: p.id,
-        ringNumber: p.ringNumber,
-        name: p.name,
-        sex: p.sex,
-        color: p.color,
-        bornYear: p.bornYear,
-        status: p.status,
-        loft: p.loft,
-        breeder: p.breeder,
-        fatherId: p.fatherId,
-        motherId: p.motherId,
-        image: p.image,
-        notes: p.notes,
-        wins: p.wins,
-        races: p.races,
+        ...p,
         createdAt: now,
         updatedAt: now,
       }))
     );
+
+    // Other tables
+    await db.seasons.bulkAdd(mockSeasons);
+    await db.pairs.bulkAdd(mockPairs);
+    await db.races.bulkAdd(mockRaces);
+    await db.teams.bulkAdd(mockTeams);
+    await db.contacts.bulkAdd(mockContacts);
+    await db.stations.bulkAdd(mockStations);
+    await db.lofts.bulkAdd(mockLofts);
+    await db.journal.bulkAdd(mockJournal);
+    await db.medications.bulkAdd(mockMedications);
+    await db.bands.bulkAdd(mockBands);
   }
 
   // Seed default autocomplete values once.

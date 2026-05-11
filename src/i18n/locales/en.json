@@ -539,5 +539,19 @@
   "not_found": {
     "title": "Oops! Page not found",
     "return": "Return to Home"
+  },
+  "voice_input": {
+    "loading_model": "Loading Whisper model...",
+    "ready": "Ready",
+    "recording": "Recording...",
+    "transcribing": "Transcribing...",
+    "record": "Record",
+    "stop": "Stop",
+    "upload": "Upload audio",
+    "error_browser": "Your browser does not support audio recording",
+    "error_permission": "Microphone permission denied. Enable it in browser settings.",
+    "error_no_mic": "No microphone detected.",
+    "error_mic": "Could not access the microphone.",
+    "error_generic": "Transcription error"
   }
 }

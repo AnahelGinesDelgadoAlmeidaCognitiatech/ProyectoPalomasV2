@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { getPigeon, type Pigeon } from "@/data/pigeons";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
+import { db, type Pigeon } from "@/lib/db";
 
 function Node({ pigeon, accent }: { pigeon?: Pigeon; accent?: string }) {
   const { t } = useTranslation();
@@ -24,34 +25,49 @@ function Node({ pigeon, accent }: { pigeon?: Pigeon; accent?: string }) {
 }
 
 export function PedigreeTree({ rootId }: { rootId: string }) {
-  const self = getPigeon(rootId);
-  const father = getPigeon(self?.fatherId);
-  const mother = getPigeon(self?.motherId);
-  const ff = getPigeon(father?.fatherId);
-  const fm = getPigeon(father?.motherId);
-  const mf = getPigeon(mother?.fatherId);
-  const mm = getPigeon(mother?.motherId);
+  const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+  const genSetting = useLiveQuery(() => db.settings.get("pedigree.generations"), []);
+  const maxGen = (genSetting?.value as number) || 3;
+
+  const getPigeon = (id?: string) => allPigeons.find(p => p.id === id);
+
+  const getAncestorsAtDepth = (id: string | undefined, targetDepth: number, currentDepth = 1): (Pigeon | undefined)[] => {
+    const p = getPigeon(id);
+    if (currentDepth === targetDepth) return [p];
+    return [
+      ...getAncestorsAtDepth(p?.fatherId, targetDepth, currentDepth + 1),
+      ...getAncestorsAtDepth(p?.motherId, targetDepth, currentDepth + 1),
+    ];
+  };
 
   const cock = "border-l-4 border-l-primary";
   const hen = "border-l-4 border-l-accent";
 
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-      {/* Self */}
-      <div className="flex flex-col justify-center">
-        {self && <Node pigeon={self} />}
-      </div>
-      {/* Parents */}
-      <div className="grid grid-rows-2 gap-3">
-        <Node pigeon={father} accent={cock} />
-        <Node pigeon={mother} accent={hen} />
-      </div>
-      {/* Grandparents */}
-      <div className="grid grid-rows-4 gap-3">
-        <Node pigeon={ff} accent={cock} />
-        <Node pigeon={fm} accent={hen} />
-        <Node pigeon={mf} accent={cock} />
-        <Node pigeon={mm} accent={hen} />
+    <div className="w-full overflow-x-auto pb-4">
+      <div 
+        className="grid gap-4" 
+        style={{ 
+          gridTemplateColumns: `repeat(${maxGen}, minmax(180px, 1fr))`,
+          minWidth: maxGen > 3 ? `${maxGen * 180}px` : "100%"
+        }}
+      >
+        {Array.from({ length: maxGen }).map((_, colIndex) => {
+          const depth = colIndex + 1;
+          const ancestors = getAncestorsAtDepth(rootId, depth);
+          
+          return (
+            <div key={depth} className="flex flex-col justify-around gap-3">
+              {ancestors.map((p, i) => (
+                <Node 
+                  key={`${depth}-${i}`} 
+                  pigeon={p} 
+                  accent={depth === 1 ? "" : (i % 2 === 0 ? cock : hen)} 
+                />
+              ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

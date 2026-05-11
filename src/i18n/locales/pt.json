@@ -539,5 +539,19 @@
   "not_found": {
     "title": "Página não encontrada",
     "return": "Voltar ao início"
+  },
+  "voice_input": {
+    "loading_model": "A carregar modelo Whisper...",
+    "ready": "Pronto",
+    "recording": "A gravar...",
+    "transcribing": "A transcrever...",
+    "record": "Gravar",
+    "stop": "Parar",
+    "upload": "Enviar áudio",
+    "error_browser": "O seu navegador não suporta gravação de áudio",
+    "error_permission": "Permissão de microfone negada. Ative-a nas definições do navegador.",
+    "error_no_mic": "Nenhum microfone detetado.",
+    "error_mic": "Não foi possível aceder ao microfone.",
+    "error_generic": "Erro na transcrição"
   }
 }

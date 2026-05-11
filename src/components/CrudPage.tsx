@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { db, enqueueSync, removeAndSync, uid, type SyncEntity } from "@/lib/db";
+import { VoiceInput } from "@/components/VoiceInput";
 
 export type FieldDef =
   | { name: string; label: string; type?: "text" | "number" | "date"; placeholder?: string; required?: boolean; full?: boolean }
@@ -108,11 +109,22 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
                   <div key={f.name} className={(f as any).full ? "sm:col-span-2 space-y-1.5" : "space-y-1.5"}>
                     <Label className="text-xs uppercase tracking-wide text-muted-foreground">{f.label}</Label>
                     {f.type === "textarea" ? (
-                      <Textarea
-                         value={editing[f.name] ?? ""}
-                         onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })}
-                         placeholder={f.placeholder}
-                       />
+                      <>
+                        <Textarea
+                           value={editing[f.name] ?? ""}
+                           onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })}
+                           placeholder={f.placeholder}
+                         />
+                        <VoiceInput
+                          className="mt-1.5"
+                          onTranscript={(text) =>
+                            setEditing((prev: any) => ({
+                              ...prev,
+                              [f.name]: prev[f.name] ? `${prev[f.name]} ${text}` : text,
+                            }))
+                          }
+                        />
+                      </>
                     ) : f.type === "custom" ? (
                       f.render(editing[f.name], (val) => setEditing({ ...editing, [f.name]: val }))
                     ) : (
