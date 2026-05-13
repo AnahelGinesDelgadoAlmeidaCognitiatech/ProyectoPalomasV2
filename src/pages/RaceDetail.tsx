@@ -193,7 +193,7 @@ export default function RaceDetail() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{race.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{race.name}</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant={race.archived ? "secondary" : "default"}>
                 {race.archived ? t("common.archived") : t("common.active")}

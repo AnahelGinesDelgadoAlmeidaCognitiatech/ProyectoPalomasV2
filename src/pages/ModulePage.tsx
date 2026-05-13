@@ -16,7 +16,7 @@ export default function ModulePage({ title, description, icon: Icon, features = 
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
           <p className="text-muted-foreground">{description}</p>
         </div>
         <Button variant="outline" size="sm" disabled className="gap-2">

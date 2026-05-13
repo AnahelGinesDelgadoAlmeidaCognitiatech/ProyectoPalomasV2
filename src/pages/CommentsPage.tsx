@@ -52,7 +52,7 @@ export default function CommentsPage({ target, title }: { target: CommentTarget;
             <MessageSquare className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
             <p className="text-muted-foreground">
               {target === "pigeon" ? t("comments.desc_pigeons") : target === "pair" ? t("comments.desc_pairs") : t("comments.desc_teams")}
             </p>
