@@ -59,7 +59,7 @@ export default function PigeonEdit() {
 
   // ---------------- Voice assistant (Local Whisper) ----------------
   const { i18n } = useTranslation();
-  const { transcribe, transcribing, status } = useWhisperTranscription();
+  const { transcribe, transcribing, status, loadingProgress } = useWhisperTranscription();
   const { recording, start: startRec, stop: stopRec, error: recError } = useAudioRecorder();
   
   const [wizardOpen, setWizardOpen] = useState(false);
