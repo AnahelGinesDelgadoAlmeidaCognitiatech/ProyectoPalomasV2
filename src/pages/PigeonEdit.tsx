@@ -59,7 +59,7 @@ export default function PigeonEdit() {
 
   // ---------------- Voice assistant (Local Whisper) ----------------
   const { i18n } = useTranslation();
-  const { transcribe, transcribing, status } = useWhisperTranscription();
+  const { transcribe, transcribing, status, loadingProgress } = useWhisperTranscription();
   const { recording, start: startRec, stop: stopRec, error: recError } = useAudioRecorder();
   
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -98,8 +98,9 @@ export default function PigeonEdit() {
     }
 
     setWizardBusy(true);
+    let text = "";
     try {
-      const text = await transcribe(blob);
+      text = await transcribe(blob);
       if (!text) {
         toast.message(t("pigeon_edit.voice_no_voice"));
         setWizardOpen(false);
@@ -141,7 +142,9 @@ export default function PigeonEdit() {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || t("pigeon_edit.voice_process_error"));
-      setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
+      if (text) {
+        setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
+      }
     } finally {
       setWizardBusy(false);
     }
