@@ -87,7 +87,7 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
             <Icon className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
             <p className="text-muted-foreground">{description}</p>
           </div>
         </div>
@@ -156,9 +156,9 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
         <div className="grid gap-3">
           {items.map((it) => (
             <Card key={it.id} className="shadow-soft">
-              <CardContent className="flex items-center justify-between gap-4 p-4">
+              <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4">
                 <div className="min-w-0 flex-1">{renderItem(it)}</div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 self-end sm:self-auto">
                   <Button size="icon" variant="ghost" onClick={() => editItem(it)} aria-label={t("crud.aria_edit")}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(it.id)} aria-label={t("crud.aria_delete")}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>

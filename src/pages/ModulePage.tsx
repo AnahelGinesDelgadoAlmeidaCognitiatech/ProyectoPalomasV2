@@ -16,7 +16,7 @@ export default function ModulePage({ title, description, icon: Icon, features = 
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
           <p className="text-muted-foreground">{description}</p>
         </div>
         <Button variant="outline" size="sm" disabled className="gap-2">
@@ -25,7 +25,7 @@ export default function ModulePage({ title, description, icon: Icon, features = 
       </div>
 
       <Card className="overflow-hidden shadow-card">
-        <div className="bg-gradient-hero px-8 py-12 text-primary-foreground">
+        <div className="bg-gradient-hero px-6 sm:px-8 py-8 sm:py-12 text-primary-foreground">
           <Icon className="h-10 w-10 opacity-90" />
           <h2 className="mt-4 text-2xl font-bold">{title}</h2>
           <p className="mt-1 max-w-xl text-sm opacity-90">{description}</p>
