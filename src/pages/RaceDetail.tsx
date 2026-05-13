@@ -602,7 +602,7 @@ export default function RaceDetail() {
                     <Gauge className="h-4 w-4" /> {t("crud_pages.races.auto_calc")}
                   </Button>
                 </div>
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label className="text-[10px] font-black text-muted-foreground uppercase">KM</Label>
                     <Input 
