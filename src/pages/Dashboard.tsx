@@ -33,14 +33,14 @@ export default function Dashboard() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.label} className="border-border/60 shadow-soft transition-smooth hover:shadow-card">
-            <CardContent className="flex items-start justify-between p-6">
-              <div>
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <p className="mt-2 text-3xl font-bold">{s.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{s.change}</p>
+            <CardContent className="flex items-start justify-between gap-3 p-4 sm:p-6">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{s.label}</p>
+                <p className="mt-2 text-2xl sm:text-3xl font-bold">{s.value}</p>
+                <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground line-clamp-2">{s.change}</p>
               </div>
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${s.tint}`}>
-                <s.icon className="h-5 w-5" />
+              <div className={`flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl ${s.tint}`}>
+                <s.icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
             </CardContent>
           </Card>
