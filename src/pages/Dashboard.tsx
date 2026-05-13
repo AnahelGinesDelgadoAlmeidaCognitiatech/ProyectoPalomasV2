@@ -30,7 +30,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground">{t("dashboard.desc")}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card key={s.label} className="border-border/60 shadow-soft transition-smooth hover:shadow-card">
             <CardContent className="flex items-start justify-between p-6">
