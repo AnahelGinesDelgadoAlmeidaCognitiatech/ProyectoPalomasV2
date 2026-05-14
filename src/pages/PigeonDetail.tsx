@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil, Trash2, Bird } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PedigreeTree } from "@/components/PedigreeTree";
 import { db, enqueueSync, uid, type Race, type Medication, type Comment } from "@/lib/db";
 import { calculateCOI } from "@/lib/genetics";
