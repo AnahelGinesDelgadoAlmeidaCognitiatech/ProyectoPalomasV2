@@ -58,8 +58,14 @@ function audioFormatFromMime(mime?: string): string {
 }
 
 function stripDataUrl(s: string): { data: string; mime?: string } {
-  const m = s.match(/^data:([^;]+);base64,(.*)$/);
+  // Handles data URLs with optional parameters like ;codecs=opus before ;base64,
+  const m = s.match(/^data:([^;,]+)(?:;[^,]*?)?;base64,(.*)$/);
   if (m) return { data: m[2], mime: m[1] };
+  // Fallback: if it starts with "data:" but didn't match, strip up to the comma
+  const idx = s.indexOf("base64,");
+  if (s.startsWith("data:") && idx !== -1) {
+    return { data: s.slice(idx + "base64,".length) };
+  }
   return { data: s };
 }
 
