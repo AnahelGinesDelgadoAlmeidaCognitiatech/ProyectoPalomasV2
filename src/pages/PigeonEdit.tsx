@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Trash2, Wand2, Mic, Square, Loader2 } from "lucide-react";
-import { VoiceInput } from "@/components/VoiceInput";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,10 @@ import {
 } from "@/components/ui/select";
 
 import { db, enqueueSync, uid, type Pigeon } from "@/lib/db";
-import { useVoiceRecorder, MAX_RECORDING_MS, isSpeechSupported } from "@/hooks/useVoiceRecorder";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { supabase } from "@/integrations/supabase/client";
+
+const MAX_RECORDING_MS = 60_000; // 60s max per dictado
 
 const emptyPigeon = (): Pigeon => ({
   id: uid(),
@@ -56,16 +57,15 @@ export default function PigeonEdit() {
   const set = <K extends keyof Pigeon>(k: K, v: Pigeon[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // ---------------- Voice wizard ----------------
+  // ---------------- Voice wizard (MediaRecorder + edge function) ----------------
   const { i18n } = useTranslation();
-  const voiceLang = i18n.language === "pt" ? "pt-PT" : i18n.language === "en" ? "en-US" : "es-ES";
-  const wizard = useVoiceRecorder(voiceLang);
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const recorder = useAudioRecorder();
   const [wizardBusy, setWizardBusy] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!wizard.recording) {
+    if (!recorder.recording) {
       setElapsedSec(0);
       return;
     }
@@ -74,41 +74,65 @@ export default function PigeonEdit() {
       setElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
     }, 500);
     return () => clearInterval(timer);
-  }, [wizard.recording]);
+  }, [recorder.recording]);
+
+  useEffect(() => () => {
+    if (autoStopRef.current) clearTimeout(autoStopRef.current);
+  }, []);
+
+  function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
 
   async function startWizard() {
-    setWizardOpen(true);
     try {
-      await wizard.start({
-        onAutoStop: () => {
-          stopWizardAndApply();
-        },
-      });
+      await recorder.start();
+      autoStopRef.current = setTimeout(() => {
+        autoStopRef.current = null;
+        stopWizardAndApply();
+      }, MAX_RECORDING_MS);
     } catch (e: any) {
       toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
-      setWizardOpen(false);
     }
   }
 
   async function stopWizardAndApply() {
-    const res = await wizard.stop();
-    setWizardOpen(false);
-    
-    const text = res.transcript;
-    if (!text) {
+    if (autoStopRef.current) {
+      clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
+    if (!recorder.recording) return;
+
+    let blob: Blob;
+    try {
+      blob = await recorder.stop();
+    } catch (e: any) {
+      toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
+      return;
+    }
+
+    if (!blob || blob.size < 500) {
       toast.message(t("pigeon_edit.voice_no_voice"));
       return;
     }
 
     setWizardBusy(true);
     try {
+      const dataUrl = await blobToBase64(blob);
       const { data, error } = await supabase.functions.invoke("parse-pigeon", {
-        body: { 
-          transcript: text,
-          language: i18n.language
+        body: {
+          audio: dataUrl,
+          mimeType: blob.type,
+          language: i18n.language,
         },
       });
       if (error) throw error;
+      const text = (data?.transcript ?? "").toString();
       const parsed = (data?.fields ?? {}) as Partial<Pigeon>;
 
       setForm((f) => ({
@@ -126,8 +150,8 @@ export default function PigeonEdit() {
             ? `${f.notes}\n${parsed.notes}`
             : String(parsed.notes)
           : f.notes
-            ? `${f.notes}\n${text}`
-            : text,
+            ? text ? `${f.notes}\n${text}` : f.notes
+            : text || f.notes,
       }));
 
       const filled = Object.keys(parsed).length;
@@ -139,7 +163,6 @@ export default function PigeonEdit() {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || t("pigeon_edit.voice_process_error"));
-      setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
     } finally {
       setWizardBusy(false);
     }
@@ -193,26 +216,25 @@ export default function PigeonEdit() {
               {t("pigeon_edit.voice_desc")}
             </p>
 
-            {wizardOpen && wizard.recording && (
+            {recorder.recording && (
               <div className="rounded-md bg-background border p-3 text-sm">
-                <p>
-                  <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-destructive align-middle" />
-                  {wizard.finalText}{" "}
-                  <span className="text-muted-foreground">{wizard.interim}</span>
+                <p className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" />
+                  <span className="text-muted-foreground">{t("pigeon_edit.voice_recording") || "Grabando..."}</span>
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground tabular-nums">
                   {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} (máx)
                 </p>
               </div>
             )}
-            {wizard.error && !wizard.recording && (
+            {recorder.error && !recorder.recording && (
               <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
-                {wizard.error}
+                {recorder.error}
               </p>
             )}
 
             <div>
-              {!wizard.recording ? (
+              {!recorder.recording ? (
                 <Button
                   type="button"
                   onClick={startWizard}
