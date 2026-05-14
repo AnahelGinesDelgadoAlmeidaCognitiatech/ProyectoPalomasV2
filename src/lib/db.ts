@@ -244,6 +244,19 @@ export interface SyncQueueItem {
   syncedAt?: number;
 }
 
+// Helper to get the current user ID for DB naming
+const getCurrentUserId = () => {
+  const mock = localStorage.getItem("pigeondb_mock_user");
+  if (mock) return JSON.parse(mock).id;
+  // This is a simple way to get the session from localStorage if not using the hook
+  const sbKey = Object.keys(localStorage).find(k => k.includes("-auth-token"));
+  if (sbKey) {
+    const session = JSON.parse(localStorage.getItem(sbKey) || "{}");
+    return session?.user?.id;
+  }
+  return "public"; // Fallback
+};
+
 class PigeonDexie extends Dexie {
   pigeons!: Table<Pigeon, string>;
   pairs!: Table<Pair, string>;
@@ -262,12 +275,8 @@ class PigeonDexie extends Dexie {
   settings!: Table<SettingEntry, string>;
   syncQueue!: Table<SyncQueueItem, number>;
 
-  constructor() {
-    super("pigeondb");
-    this.version(1).stores({
-      pigeons: "id, ringNumber, name, status, loft, bornYear, fatherId, motherId, updatedAt",
-      syncQueue: "++id, entity, op, syncedAt, createdAt",
-    });
+  constructor(userId: string) {
+    super(`pigeondb_${userId}`);
     this.version(3).stores({
       pigeons: "id, ringNumber, name, status, loft, bornYear, fatherId, motherId, updatedAt",
       pairs: "id, seasonId, cockId, henId, updatedAt",
@@ -289,7 +298,7 @@ class PigeonDexie extends Dexie {
   }
 }
 
-export const db = new PigeonDexie();
+export const db = new PigeonDexie(getCurrentUserId());
 
 export const uid = () =>
   (crypto as any)?.randomUUID?.() ??
@@ -325,6 +334,13 @@ export async function removeAndSync<T>(
 }
 
 export async function seedIfEmpty() {
+  const userId = getCurrentUserId();
+  // Only seed if we are the mock admin or if it's the public view
+  // This prevents new users (like User1) from getting the same demo data
+  if (userId !== "mock-admin-id" && userId !== "public") {
+    return;
+  }
+
   const count = await db.pigeons.count();
   if (count === 0) {
     const { pigeons: seed } = await import("@/data/pigeons");

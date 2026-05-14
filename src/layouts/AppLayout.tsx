@@ -74,9 +74,7 @@ export default function AppLayout() {
               )}
             </form>
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="hidden xs:block">
-                <ThemeToggle />
-              </div>
+              <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" aria-label={t("layout.notifications")} className="relative h-9 w-9">

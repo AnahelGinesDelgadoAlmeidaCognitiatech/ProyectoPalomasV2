@@ -1,8 +1,8 @@
-import { Settings as SettingsIcon, FileText, IdCard } from "lucide-react";
+import { Settings as SettingsIcon, FileText, IdCard, LogOut, Key, Loader2, User as UserIcon } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/select";
 import { db, enqueueSync } from "@/lib/db";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 function useSetting<T>(key: string, fallback: T) {
   const v = useLiveQuery(() => db.settings.get(key), [key]);
@@ -31,53 +34,128 @@ export function GeneralSettings() {
   const [defaultLoft, setDefaultLoft] = useSetting<string>("defaultLoft", "");
   const [language, setLanguage] = useSetting<string>("language", "es");
   const { t } = useTranslation();
+  const { user, signOut } = useAuth();
+  
+  const [passLoading, setPassLoading] = useState(false);
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+
+  const handleUpdatePassword = async () => {
+    if (newPass !== confirmPass) {
+      toast.error(t("auth.pass_mismatch") || "Las contraseñas no coinciden");
+      return;
+    }
+    if (newPass.length < 6) {
+      toast.error(t("auth.password_hint"));
+      return;
+    }
+    
+    setPassLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPass });
+      if (error) throw error;
+      toast.success(t("auth.pass_updated") || "Contraseña actualizada");
+      setNewPass("");
+      setConfirmPass("");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setPassLoading(false);
+    }
+  };
 
   return (
-    <SettingsShell title={t("settings.general_title")} icon={SettingsIcon} description={t("settings.general_desc")}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t("settings.theme")}>
-          <Select value={theme} onValueChange={(v) => setTheme(v as any)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">{t("settings.light")}</SelectItem>
-              <SelectItem value="dark">{t("settings.dark")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label={t("settings.units")}>
-          <Select value={units} onValueChange={(v) => setUnits(v as any)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="km">{t("settings.kilometers")}</SelectItem>
-              <SelectItem value="mi">{t("settings.miles")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label={t("settings.date_format")}>
-          <Select value={dateFormat} onValueChange={setDateFormat}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="YYYY-MM-DD">2025-04-30</SelectItem>
-              <SelectItem value="DD/MM/YYYY">30/04/2025</SelectItem>
-              <SelectItem value="MM/DD/YYYY">04/30/2025</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label={t("settings.language")}>
-          <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="es">{t("settings.spanish")}</SelectItem>
-              <SelectItem value="en">{t("settings.english")}</SelectItem>
-              <SelectItem value="pt">{t("settings.portuguese")}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label={t("settings.default_loft")}>
-          <Input value={defaultLoft} onChange={(e) => setDefaultLoft(e.target.value)} placeholder="Main Loft" />
-        </Field>
-      </div>
-    </SettingsShell>
+    <div className="space-y-8">
+      <SettingsShell title={t("settings.general_title")} icon={SettingsIcon} description={t("settings.general_desc")}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label={t("settings.theme")}>
+            <Select value={theme} onValueChange={(v) => setTheme(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">{t("settings.light")}</SelectItem>
+                <SelectItem value="dark">{t("settings.dark")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.units")}>
+            <Select value={units} onValueChange={(v) => setUnits(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="km">{t("settings.kilometers")}</SelectItem>
+                <SelectItem value="mi">{t("settings.miles")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.date_format")}>
+            <Select value={dateFormat} onValueChange={setDateFormat}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="YYYY-MM-DD">2025-04-30</SelectItem>
+                <SelectItem value="DD/MM/YYYY">30/04/2025</SelectItem>
+                <SelectItem value="MM/DD/YYYY">04/30/2025</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.language")}>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="es">{t("settings.spanish")}</SelectItem>
+                <SelectItem value="en">{t("settings.english")}</SelectItem>
+                <SelectItem value="pt">{t("settings.portuguese")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label={t("settings.default_loft")}>
+            <Input value={defaultLoft} onChange={(e) => setDefaultLoft(e.target.value)} placeholder="Main Loft" />
+          </Field>
+        </div>
+      </SettingsShell>
+
+      <SettingsShell title={t("auth.account_title") || "Cuenta"} icon={UserIcon} description={t("auth.account_desc") || "Gestiona tu sesión y seguridad"}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between rounded-lg bg-muted/40 p-4">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">{t("auth.logged_as") || "Sesión iniciada como"}</p>
+              <p className="text-xs text-muted-foreground font-mono">{user?.email}</p>
+            </div>
+            <Button variant="destructive" size="sm" onClick={signOut} className="gap-2">
+              <LogOut className="h-4 w-4" /> {t("auth.btn_logout") || "Cerrar sesión"}
+            </Button>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Key className="h-4 w-4 text-primary" /> {t("auth.change_pass_title") || "Cambiar contraseña"}
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs uppercase text-muted-foreground">{t("auth.new_password") || "Nueva contraseña"}</Label>
+                <Input 
+                  type="password" 
+                  value={newPass} 
+                  onChange={(e) => setNewPass(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs uppercase text-muted-foreground">{t("auth.confirm_password") || "Repetir contraseña"}</Label>
+                <Input 
+                  type="password" 
+                  value={confirmPass} 
+                  onChange={(e) => setConfirmPass(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+            <Button onClick={handleUpdatePassword} disabled={passLoading || !newPass} className="gap-2">
+              {passLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {t("auth.btn_update_pass") || "Actualizar contraseña"}
+            </Button>
+          </div>
+        </div>
+      </SettingsShell>
+    </div>
   );
 }
 

@@ -21,6 +21,7 @@ import {
 import { db, enqueueSync, uid, type Pigeon } from "@/lib/db";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const MAX_RECORDING_MS = 60_000; // 60s max per dictado
 
@@ -277,6 +278,17 @@ export default function PigeonEdit() {
       {/* Form */}
       <Card>
         <CardContent className="pt-6 grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-1.5 block">
+              {t("pigeon_edit.field_image") || "Pigeon Photo"}
+            </Label>
+            <ImageUpload 
+              currentImage={form.image}
+              onUpload={(url) => set("image", url)}
+              onRemove={() => set("image", "")}
+            />
+          </div>
+
           <Field label={t("pigeon_edit.field_name")}>
             <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Apollo" />
           </Field>
