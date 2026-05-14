@@ -111,7 +111,9 @@ export default function AppLayout() {
             </div>
           </header>
           <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-8">
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </main>
         </div>
       </div>
