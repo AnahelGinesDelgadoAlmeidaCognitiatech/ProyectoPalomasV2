@@ -77,25 +77,45 @@ export default function Pigeons() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 min-w-0 overflow-hidden">
+      <div className="flex flex-col space-y-4 sm:space-y-6">
+        {/* Filtros de Estado (Tabs) */}
+        <div className="relative w-full">
           <Tabs value={tab} onValueChange={(v) => {
             setTab(v as typeof tab);
             if (filterId) {
               searchParams.delete("filterId");
               setSearchParams(searchParams);
             }
-          }} className="w-full sm:w-auto min-w-0">
-            <TabsList className="w-full justify-start sm:w-auto">
-              <TabsTrigger value="all" className="flex-1 sm:flex-none">{t("pigeons.tab_all")}</TabsTrigger>
-              <TabsTrigger value="breeder" className="flex-1 sm:flex-none">{t("pigeons.tab_breeders")}</TabsTrigger>
-              <TabsTrigger value="racer" className="flex-1 sm:flex-none">{t("pigeons.tab_racers")}</TabsTrigger>
-              <TabsTrigger value="young" className="flex-1 sm:flex-none">{t("pigeons.tab_young")}</TabsTrigger>
-              <TabsTrigger value="lost" className="flex-1 sm:flex-none">{t("pigeons.tab_lost")}</TabsTrigger>
+          }} className="w-full">
+            <TabsList className="flex w-full h-auto min-h-[44px] justify-start overflow-x-auto overflow-y-hidden bg-muted/50 p-1 mb-1 scrollbar-none">
+              <TabsTrigger value="all" className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm">{t("pigeons.tab_all")}</TabsTrigger>
+              <TabsTrigger value="breeder" className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm">{t("pigeons.tab_breeders")}</TabsTrigger>
+              <TabsTrigger value="racer" className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm">{t("pigeons.tab_racers")}</TabsTrigger>
+              <TabsTrigger value="young" className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm">{t("pigeons.tab_young")}</TabsTrigger>
+              <TabsTrigger value="lost" className="whitespace-nowrap px-4 py-2 text-xs sm:text-sm">{t("pigeons.tab_lost")}</TabsTrigger>
             </TabsList>
           </Tabs>
+        </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+        {/* Buscador y Filtros Guardados */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-center">
+          <div className="relative w-full lg:col-span-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t("pigeons.search_placeholder")}
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                if (filterId) {
+                  searchParams.delete("filterId");
+                  setSearchParams(searchParams);
+                }
+              }}
+              className="pl-9 h-11 sm:h-10 w-full bg-background border-border/60"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full lg:col-span-1">
             {savedFilters.length > 0 && (
               <Select 
                 value={filterId || ""} 
@@ -108,9 +128,11 @@ export default function Pigeons() {
                   setSearchParams(searchParams);
                 }}
               >
-                <SelectTrigger className="flex-1 sm:w-[150px]">
-                  <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <SelectValue placeholder={t("sidebar.filters")} />
+                <SelectTrigger className="flex-1 h-11 sm:h-10 bg-background border-border/60">
+                  <div className="flex items-center">
+                    <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder={t("sidebar.filters")} />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t("pigeons.tab_all")}</SelectItem>
@@ -123,34 +145,18 @@ export default function Pigeons() {
 
             {filterId && (
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="icon" 
                 onClick={() => {
                   searchParams.delete("filterId");
                   setSearchParams(searchParams);
                 }}
-                className="shrink-0"
+                className="h-11 w-11 sm:h-10 sm:w-10 shrink-0"
               >
                 <X className="h-4 w-4" />
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="relative w-full md:max-w-[240px] shrink-0">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t("pigeons.search_placeholder")}
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              if (filterId) {
-                searchParams.delete("filterId");
-                setSearchParams(searchParams);
-              }
-            }}
-            className="pl-9 h-10"
-          />
         </div>
       </div>
 

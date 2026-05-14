@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Bell, CloudOff, Check } from "lucide-react";
+import { Search, Plus, Bell, CloudOff, Check, User, LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -14,11 +14,14 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { db, seedIfEmpty } from "@/lib/db";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const { t } = useTranslation();
+  const { user, signOut } = useAuth();
+
 
   useEffect(() => { seedIfEmpty(); }, []);
 
@@ -73,8 +76,19 @@ export default function AppLayout() {
                 </div>
               )}
             </form>
-            <div className="flex items-center gap-1 sm:gap-2">
+
+            <div className="flex items-center gap-1 sm:gap-2 ml-auto">
+              {location.pathname.startsWith("/pigeons") && (
+                <Button asChild size="sm" className="h-9 px-2 sm:px-3 gap-2 shadow-elegant mr-2">
+                  <Link to="/pigeons/new">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden md:inline">{t("layout.add_pigeon")}</span>
+                  </Link>
+                </Button>
+              )}
+
               <ThemeToggle />
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" aria-label={t("layout.notifications")} className="relative h-9 w-9">
@@ -100,14 +114,34 @@ export default function AppLayout() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              {location.pathname.startsWith("/pigeons") && (
-                <Button asChild size="sm" className="h-9 px-2 sm:px-3 gap-2">
-                  <Link to="/pigeons/new">
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden md:inline">{t("layout.add_pigeon")}</span>
-                  </Link>
-                </Button>
-              )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-primary/10 text-primary">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.email?.split('@')[0] || "Usuario"}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings/general" className="flex w-full items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span>{t("sidebar.settings")}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4" />
+                    <span>{t("auth.btn_logout") || "Cerrar sesión"}</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-8">
