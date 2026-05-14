@@ -117,6 +117,7 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
                          />
                         <VoiceInput
                           className="mt-1.5"
+                          showControls={true}
                           onTranscript={(text) =>
                             setEditing((prev: any) => ({
                               ...prev,

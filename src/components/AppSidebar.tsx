@@ -1,5 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/lib/db";
 import {
   Bird, Plus, ScanLine, BarChart3, Image as ImageIcon, Globe, ArrowLeftRight,
   Heart, CalendarDays, Users, Trophy, Ruler, Gauge, MapPinned, Radio, Home,
@@ -41,7 +43,7 @@ const groups: Group[] = [
       { titleKey: "sidebar.races", url: "/races", icon: Trophy },
       { titleKey: "sidebar.distance_calculator", url: "/distance", icon: Ruler },
       { titleKey: "sidebar.speed_calculator", url: "/speed", icon: Gauge },
-      { titleKey: "sidebar.road_trainer", url: "/trainer", icon: Radio },
+      // { titleKey: "sidebar.road_trainer", url: "/trainer", icon: Radio },
     ],
   },
   {
@@ -85,6 +87,8 @@ export function AppSidebar() {
     path === "/" ? location.pathname === "/" : location.pathname === path || location.pathname.startsWith(path + "/");
 
   const groupHasActive = (g: Group) => g.items.some((i) => isActive(i.url));
+
+  const savedFilters = useLiveQuery(() => db.filters.toArray()) ?? [];
 
   return (
     <Sidebar collapsible="icon">
@@ -168,6 +172,40 @@ export function AppSidebar() {
             </SidebarGroup>
           </Collapsible>
         ))}
+
+        {savedFilters.length > 0 && (
+          <Collapsible defaultOpen className="group/collapsible">
+            <SidebarGroup>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="flex w-full items-center gap-2 text-xs font-semibold uppercase tracking-wide hover:text-foreground">
+                  <Filter className="h-3.5 w-3.5" />
+                  <span>{t("sidebar.filters")}</span>
+                  <ChevronDown className="ml-auto h-3.5 w-3.5 transition-transform group-data-[state=closed]/collapsible:-rotate-90" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {savedFilters.map((f) => {
+                      const url = `/${f.module === "pigeons" ? "pigeons" : f.module === "races" ? "races" : "pairs"}?filterId=${f.id}`;
+                      const active = location.pathname + location.search === url;
+                      return (
+                        <SidebarMenuItem key={f.id}>
+                          <SidebarMenuButton asChild isActive={active} size="sm">
+                            <NavLink to={url} onClick={handleNav}>
+                              <div className="h-1.5 w-1.5 rounded-full bg-primary/40 shrink-0" />
+                              <span className="flex-1 truncate">{f.name}</span>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        )}
       </SidebarContent>
     </Sidebar>
   );

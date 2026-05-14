@@ -47,62 +47,64 @@ export default function AppLayout() {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
-            <SidebarTrigger />
-            <form onSubmit={submitSearch} className="relative hidden flex-1 max-w-md md:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <SidebarTrigger className="-ml-1 sm:ml-0" />
+            <form onSubmit={submitSearch} className="relative flex-1 max-w-[140px] xs:max-w-xs md:max-w-md mx-1">
+              <Search className="pointer-events-none absolute left-2 sm:left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t("layout.search_placeholder")}
-                className="pl-9"
+                className="pl-7 sm:pl-9 h-9 sm:h-10 text-xs sm:text-sm"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
               {q && matches.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
+                <div className="absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg z-50">
                   {matches.map((p) => (
                     <Link
                       key={p.id}
                       to={`/pigeons/${p.id}`}
                       onClick={() => setQ("")}
-                      className="flex items-center justify-between gap-3 rounded-sm px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      className="flex items-center justify-between gap-3 rounded-sm px-2 py-1.5 text-xs sm:text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                       <span className="truncate">{p.name || "—"}</span>
-                      <span className="font-mono text-xs text-muted-foreground">{p.ringNumber}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground shrink-0">{p.ringNumber}</span>
                     </Link>
                   ))}
                 </div>
               )}
             </form>
-            <div className="ml-auto flex items-center gap-2">
-              <ThemeToggle />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="hidden xs:block">
+                <ThemeToggle />
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label={t("layout.notifications")} className="relative">
+                  <Button variant="ghost" size="icon" aria-label={t("layout.notifications")} className="relative h-9 w-9">
                     <Bell className="h-4 w-4" />
                     {pending > 0 && (
-                      <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-warning" />
+                      <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-warning" />
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72">
-                  <DropdownMenuLabel>{t("layout.notifications")}</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-64 sm:w-72">
+                  <DropdownMenuLabel className="text-xs sm:text-sm">{t("layout.notifications")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {pending > 0 ? (
-                    <DropdownMenuItem className="gap-2">
+                    <DropdownMenuItem className="gap-2 text-xs sm:text-sm">
                       <CloudOff className="h-4 w-4 text-warning" />
                       <span>{t("layout.pending_changes", { count: pending })}</span>
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem className="gap-2 text-muted-foreground">
+                    <DropdownMenuItem className="gap-2 text-muted-foreground text-xs sm:text-sm">
                       <Check className="h-4 w-4 text-success" />
                       <span>{t("layout.all_synced")}</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button asChild size="sm" className="gap-2">
+              <Button asChild size="sm" className="h-9 px-2 sm:px-3 gap-2">
                 <Link to="/pigeons/new">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("layout.add_pigeon")}</span>
+                  <span className="hidden md:inline">{t("layout.add_pigeon")}</span>
                 </Link>
               </Button>
             </div>

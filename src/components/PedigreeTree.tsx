@@ -44,14 +44,19 @@ export function PedigreeTree({ rootId }: { rootId: string }) {
   const hen = "border-l-4 border-l-accent";
 
   return (
-    <div className="w-full overflow-x-auto pb-4">
-      <div 
-        className="grid gap-4" 
-        style={{ 
-          gridTemplateColumns: `repeat(${maxGen}, minmax(180px, 1fr))`,
-          minWidth: maxGen > 3 ? `${maxGen * 180}px` : "100%"
-        }}
-      >
+    <div className="w-full relative group/tree">
+      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent opacity-0 group-hover/tree:opacity-100 transition-opacity pointer-events-none z-10 md:hidden" />
+      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent opacity-100 md:hidden pointer-events-none z-10" />
+      
+      <div className="w-full overflow-x-auto pb-6 scrollbar-elegant">
+        <div 
+          className="grid gap-4 sm:gap-6 min-h-[400px]" 
+          style={{ 
+            gridTemplateColumns: `repeat(${maxGen}, minmax(200px, 1fr))`,
+            width: "max-content",
+            minWidth: "100%"
+          }}
+        >
         {Array.from({ length: maxGen }).map((_, colIndex) => {
           const depth = colIndex + 1;
           const ancestors = getAncestorsAtDepth(rootId, depth);
@@ -68,6 +73,7 @@ export function PedigreeTree({ rootId }: { rootId: string }) {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

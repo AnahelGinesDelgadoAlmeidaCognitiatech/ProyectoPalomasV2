@@ -1,4 +1,4 @@
-import { Contact2 } from "lucide-react";
+import { Contact2, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CrudPage } from "@/components/CrudPage";
 import { db, type Contact } from "@/lib/db";
@@ -24,7 +24,17 @@ export default function Contacts() {
       renderItem={(c) => (
         <div>
           <p className="font-semibold">{c.name} {c.country && <span className="text-muted-foreground font-normal">· {c.country}</span>}</p>
-          <p className="text-xs text-muted-foreground">{[c.email, c.phone, c.loft].filter(Boolean).join(" · ") || "—"}</p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground mt-1">
+            {c.email && (
+              <a href={`mailto:${c.email}`} className="flex items-center gap-1 text-primary hover:underline">
+                <Mail className="h-3.5 w-3.5" />
+                {c.email}
+              </a>
+            )}
+            {c.phone && <span>{c.email ? `· ${c.phone}` : c.phone}</span>}
+            {c.loft && <span>{(c.email || c.phone) ? `· ${c.loft}` : c.loft}</span>}
+            {!c.email && !c.phone && !c.loft && <span>—</span>}
+          </div>
         </div>
       )}
     />

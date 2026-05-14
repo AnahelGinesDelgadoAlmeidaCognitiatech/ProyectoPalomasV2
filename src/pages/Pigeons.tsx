@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, CloudOff } from "lucide-react";
-import { db, seedIfEmpty, type Status } from "@/lib/db";
+import { Search, Plus, CloudOff, Filter, X } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { db, seedIfEmpty, type Status, type SavedFilter } from "@/lib/db";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const statusStyles: Record<Status, string> = {
   breeder: "bg-primary/10 text-primary",
@@ -18,13 +20,26 @@ const statusStyles: Record<Status, string> = {
 };
 
 export default function Pigeons() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterId = searchParams.get("filterId");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | Status>("all");
   const { t } = useTranslation();
 
+  const savedFilters = useLiveQuery(() => db.filters.where("module").equals("pigeons").toArray()) ?? [];
+  const activeFilter = useLiveQuery(() => (filterId ? db.filters.get(filterId) : undefined), [filterId]);
+
   useEffect(() => {
     seedIfEmpty();
   }, []);
+
+  useEffect(() => {
+    if (activeFilter?.query) {
+      // Basic application of filter query: support 'status' and 'q'
+      if (activeFilter.query.status) setTab(activeFilter.query.status);
+      if (activeFilter.query.q) setQ(activeFilter.query.q);
+    }
+  }, [activeFilter]);
 
   const all = useLiveQuery(() => db.pigeons.orderBy("updatedAt").reverse().toArray(), []) ?? [];
   const pendingSync = useLiveQuery(
@@ -65,21 +80,75 @@ export default function Pigeons() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList>
-            <TabsTrigger value="all">{t("pigeons.tab_all")}</TabsTrigger>
-            <TabsTrigger value="breeder">{t("pigeons.tab_breeders")}</TabsTrigger>
-            <TabsTrigger value="racer">{t("pigeons.tab_racers")}</TabsTrigger>
-            <TabsTrigger value="young">{t("pigeons.tab_young")}</TabsTrigger>
-            <TabsTrigger value="lost">{t("pigeons.tab_lost")}</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-1 items-center gap-2">
+          <Tabs value={tab} onValueChange={(v) => {
+            setTab(v as typeof tab);
+            if (filterId) {
+              searchParams.delete("filterId");
+              setSearchParams(searchParams);
+            }
+          }} className="flex-1 sm:flex-none">
+            <TabsList className="w-full sm:w-auto">
+              <TabsTrigger value="all">{t("pigeons.tab_all")}</TabsTrigger>
+              <TabsTrigger value="breeder">{t("pigeons.tab_breeders")}</TabsTrigger>
+              <TabsTrigger value="racer">{t("pigeons.tab_racers")}</TabsTrigger>
+              <TabsTrigger value="young">{t("pigeons.tab_young")}</TabsTrigger>
+              <TabsTrigger value="lost">{t("pigeons.tab_lost")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {savedFilters.length > 0 && (
+            <Select 
+              value={filterId || ""} 
+              onValueChange={(v) => {
+                if (v === "none") {
+                  searchParams.delete("filterId");
+                } else {
+                  searchParams.set("filterId", v);
+                }
+                setSearchParams(searchParams);
+              }}
+            >
+              <SelectTrigger className="w-[180px] hidden md:flex">
+                <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                <SelectValue placeholder={t("sidebar.filters")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("pigeons.tab_all")}</SelectItem>
+                {savedFilters.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {filterId && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => {
+                searchParams.delete("filterId");
+                setSearchParams(searchParams);
+              }}
+              title="Clear Filter"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
         <div className="relative max-w-xs w-full">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t("pigeons.search_placeholder")}
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(e) => {
+              setQ(e.target.value);
+              if (filterId) {
+                searchParams.delete("filterId");
+                setSearchParams(searchParams);
+              }
+            }}
             className="pl-9"
           />
         </div>

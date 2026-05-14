@@ -12,14 +12,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { transcript } = await req.json();
-    if (!transcript || typeof transcript !== "string") {
-      return new Response(JSON.stringify({ error: "transcript required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    const { transcript, audio, language = "es" } = await req.json();
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
@@ -28,42 +22,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    const systemPrompt = `Eres un asistente que extrae datos de palomas mensajeras de carreras a partir de una nota dictada (en español o inglés).
-Reglas:
-- Devuelve SOLO los campos que aparezcan claramente en el texto. Si un campo no aparece, omítelo.
-- "name": nombre o identificador corto (ej: "Apollo", "Rayo", "El 47").
-- "ringNumber": número de anilla. Conserva letras y dígitos. Quita espacios internos pero mantén guiones. Mayúsculas. Ej: "BE-2024-1234567".
+    const systemPrompt = `Eres un experto en colombofilia (palomas mensajeras). 
+Tu tarea es transcribir el audio (si se proporciona) y extraer los siguientes campos en formato JSON:
+- "name": nombre de la paloma.
+- "ringNumber": número de anilla (ej: BE-2024-1234567).
 - "sex": "cock" (macho) | "hen" (hembra).
-- "bornYear": año de nacimiento (entero entre 1990 y 2100).
-- "color": color o características físicas (ej: "Blue Bar", "Checker", "ajedrezado oscuro").
-- "loft": nombre del palomar donde está alojada.
-- "breeder": nombre del criador.
+- "bornYear": año (ej: 2024).
+- "color": color (ej: Rodado, Azul).
+- "loft": palomar.
+- "breeder": criador.
 - "status": "breeder" | "racer" | "young" | "lost".
-- "notes": observaciones extra que no encajen en los otros campos.
-Sé tolerante a errores de transcripción de voz.`;
+- "notes": cualquier otra observación.
 
-    const tool = {
-      type: "function",
-      function: {
-        name: "extract_pigeon",
-        description: "Extrae los campos de una paloma desde texto dictado",
-        parameters: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            ringNumber: { type: "string" },
-            sex: { type: "string", enum: ["cock", "hen"] },
-            bornYear: { type: "integer" },
-            color: { type: "string" },
-            loft: { type: "string" },
-            breeder: { type: "string" },
-            status: { type: "string", enum: ["breeder", "racer", "young", "lost"] },
-            notes: { type: "string" },
-          },
-          additionalProperties: false,
-        },
-      },
-    };
+Si recibes audio, primero transcríbelo palabra por palabra y luego extrae los campos.
+Devuelve un JSON con { "transcript": "texto transcrito", "fields": { ... } }`;
+
+    let userContent;
+    if (audio) {
+      // Extraer el base64 puro (quitar el prefijo data:audio/...)
+      const base64Data = audio.split(",")[1] || audio;
+      userContent = [
+        { type: "text", text: "Transcribe este audio de un criador de palomas y extrae los datos." },
+        {
+          type: "image_url", // Lovable Gateway usa image_url como contenedor genérico para archivos en algunos modelos, 
+          // pero para Gemini 1.5 Flash usaremos el formato estándar de mensaje si es posible.
+          // Nota: El Gateway de Lovable mapea esto a los inputs multimodales de Gemini.
+          image_url: { url: `data:audio/wav;base64,${base64Data}` }
+        }
+      ];
+    } else {
+      userContent = transcript;
+    }
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -72,49 +61,28 @@ Sé tolerante a errores de transcripción de voz.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-1.5-flash", // Usamos 1.5 Flash que es excelente con audio
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: transcript },
+          { role: "user", content: userContent },
         ],
-        tools: [tool],
-        tool_choice: { type: "function", function: { name: "extract_pigeon" } },
+        response_format: { type: "json_object" }
       }),
     });
 
     if (!aiRes.ok) {
-      if (aiRes.status === 429) {
-        return new Response(JSON.stringify({ error: "Too many requests, try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiRes.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Lovable Cloud." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await aiRes.text();
-      console.error("AI gateway error:", aiRes.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const errorText = await aiRes.text();
+      console.error("AI gateway error:", aiRes.status, errorText);
+      throw new Error("AI Gateway failed");
     }
 
-    const data = await aiRes.json();
-    const call = data?.choices?.[0]?.message?.tool_calls?.[0];
-    let parsed: Record<string, unknown> = {};
-    if (call?.function?.arguments) {
-      try {
-        parsed = JSON.parse(call.function.arguments);
-      } catch (e) {
-        console.error("Could not parse arguments:", call.function.arguments);
-      }
-    }
+    const aiData = await aiRes.json();
+    const result = JSON.parse(aiData.choices[0].message.content);
 
-    return new Response(JSON.stringify({ fields: parsed }), {
+    return new Response(JSON.stringify({ 
+      transcript: result.transcript || transcript, 
+      fields: result.fields || {} 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

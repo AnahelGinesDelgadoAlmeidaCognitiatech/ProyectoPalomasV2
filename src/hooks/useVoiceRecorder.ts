@@ -32,27 +32,25 @@ export function useVoiceRecorder(lang = "es-ES") {
   const [error, setError] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
-  const streamRef = useRef<MediaStream | null>(null);
   const finalRef = useRef<string>("");
+  const recordingRef = useRef<boolean>(false);
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onAutoStopRef = useRef<(() => void) | null>(null);
 
   const cleanup = useCallback(() => {
+    recordingRef.current = false;
     if (autoStopTimerRef.current) {
       clearTimeout(autoStopTimerRef.current);
       autoStopTimerRef.current = null;
     }
-    try { recognitionRef.current?.stop?.(); } catch {}
-    try {
-      if (mediaRecorderRef.current?.state === "recording") {
-        mediaRecorderRef.current?.stop();
+    try { 
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.stop(); 
       }
     } catch {}
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
+    recognitionRef.current = null;
   }, []);
 
   useEffect(() => () => cleanup(), [cleanup]);
@@ -63,76 +61,62 @@ export function useVoiceRecorder(lang = "es-ES") {
       setInterim("");
       setFinalText("");
       finalRef.current = "";
-      chunksRef.current = [];
       startTimeRef.current = Date.now();
       onAutoStopRef.current = opts?.onAutoStop ?? null;
 
-      if (!window.isSecureContext) {
-        const msg = "Microphone requires HTTPS. Open the app on its secure URL.";
-        setError(msg);
-        throw new Error(msg);
-      }
-      if (!navigator.mediaDevices?.getUserMedia) {
-        const msg = "This browser does not support microphone access.";
-        setError(msg);
-        throw new Error(msg);
-      }
-
-      let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (e: any) {
-        const name = e?.name || "";
-        let msg = "Could not access microphone";
-        if (name === "NotAllowedError" || name === "SecurityError") {
-          msg = "Permission denied. Enable microphone for this site in browser settings.";
-        } else if (name === "NotFoundError") {
-          msg = "No microphone detected.";
-        } else if (name === "NotReadableError") {
-          msg = "Microphone is being used by another app.";
-        }
-        setError(msg);
-        throw new Error(msg);
-      }
-      streamRef.current = stream;
-
       const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (Ctor) {
-        const rec = new Ctor();
-        rec.lang = lang;
-        rec.continuous = true;
-        rec.interimResults = true;
-        rec.onresult = (ev: any) => {
-          let interimT = "";
-          for (let i = ev.resultIndex; i < ev.results.length; i++) {
-            const r = ev.results[i];
-            if (r.isFinal) {
-              finalRef.current += (finalRef.current ? " " : "") + r[0].transcript.trim();
-              setFinalText(finalRef.current);
-            } else {
-              interimT += r[0].transcript;
-            }
-          }
-          setInterim(interimT);
-        };
-        rec.onerror = (e: any) => {
-          if (e.error !== "no-speech" && e.error !== "aborted") {
-            setError(`Recognition: ${e.error}`);
-          }
-        };
-        rec.onend = () => {
-          // If we are still recording, restart the service if it stops
-          if (streamRef.current?.active) {
-            try { rec.start(); } catch {}
-          }
-        };
-        recognitionRef.current = rec;
-        try { rec.start(); } catch (e) {
-          console.error("Speech recognition start error:", e);
-        }
+      if (!Ctor) {
+        const msg = "This browser does not support speech recognition.";
+        setError(msg);
+        throw new Error(msg);
       }
 
-      setRecording(true);
+      const rec = new Ctor();
+      rec.lang = lang;
+      rec.continuous = true;
+      rec.interimResults = true;
+
+      rec.onresult = (ev: any) => {
+        let interimT = "";
+        for (let i = ev.resultIndex; i < ev.results.length; i++) {
+          const r = ev.results[i];
+          if (r.isFinal) {
+            finalRef.current += (finalRef.current ? " " : "") + r[0].transcript.trim();
+            setFinalText(finalRef.current);
+          } else {
+            interimT += r[0].transcript;
+          }
+        }
+        setInterim(interimT);
+      };
+
+      rec.onerror = (e: any) => {
+        console.error("Speech recognition error:", e.error);
+        if (e.error === "network") {
+          setError("Error de red: Asegúrate de tener internet y usar HTTPS.");
+        } else if (e.error !== "no-speech" && e.error !== "aborted") {
+          setError(`Error: ${e.error}`);
+        }
+      };
+
+      rec.onend = () => {
+        if (recordingRef.current) {
+          try { rec.start(); } catch {}
+        }
+      };
+
+      recognitionRef.current = rec;
+      recordingRef.current = true;
+      
+      try {
+        rec.start();
+        setRecording(true);
+      } catch (e) {
+        console.error("Speech recognition start error:", e);
+        setRecording(false);
+        recordingRef.current = false;
+        throw e;
+      }
 
       autoStopTimerRef.current = setTimeout(() => {
         autoStopTimerRef.current = null;
@@ -144,6 +128,7 @@ export function useVoiceRecorder(lang = "es-ES") {
 
   const stop = useCallback(async (): Promise<VoiceResult> => {
     setRecording(false);
+    recordingRef.current = false;
     
     return new Promise((resolve) => {
       const finish = () => {
@@ -155,14 +140,15 @@ export function useVoiceRecorder(lang = "es-ES") {
 
       try { 
         if (recognitionRef.current) {
-          recognitionRef.current.onend = null;
+          recognitionRef.current.onend = finish;
           recognitionRef.current.stop(); 
+        } else {
+          finish();
         }
       } catch (e) {
         console.error("Error stopping recognition:", e);
+        finish();
       }
-
-      finish();
     });
   }, [cleanup, interim]);
 

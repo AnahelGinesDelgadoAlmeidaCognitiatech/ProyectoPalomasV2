@@ -77,7 +77,7 @@ const App = () => {
                 <Route path="/races/:id" element={<RaceDetail />} />
                 <Route path="/distance" element={<DistanceCalc />} />
                 <Route path="/speed" element={<SpeedCalc />} />
-                <Route path="/trainer" element={<ComingSoonPage title={t('sidebar.road_trainer')} description={t('sidebar.road_trainer_desc')} icon={Radio} features={t('sidebar.road_trainer_features', { returnObjects: true }) as string[]} />} />
+                {/* <Route path="/trainer" element={<ComingSoonPage title={t('sidebar.road_trainer')} description={t('sidebar.road_trainer_desc')} icon={Radio} features={t('sidebar.road_trainer_features', { returnObjects: true }) as string[]} />} /> */}
 
                 {/* Stations */}
                 <Route path="/stations" element={<Stations />} />

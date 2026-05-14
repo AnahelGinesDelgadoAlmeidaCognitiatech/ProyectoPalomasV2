@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/select";
 
 import { db, enqueueSync, uid, type Pigeon } from "@/lib/db";
-import { useWhisperTranscription } from "@/hooks/useWhisperTranscription";
-import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useVoiceRecorder, MAX_RECORDING_MS, isSpeechSupported } from "@/hooks/useVoiceRecorder";
 import { supabase } from "@/integrations/supabase/client";
 
 const emptyPigeon = (): Pigeon => ({
@@ -57,17 +56,16 @@ export default function PigeonEdit() {
   const set = <K extends keyof Pigeon>(k: K, v: Pigeon[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // ---------------- Voice assistant (Local Whisper) ----------------
+  // ---------------- Voice wizard ----------------
   const { i18n } = useTranslation();
-  const { transcribe, transcribing, status, loadingProgress } = useWhisperTranscription();
-  const { recording, start: startRec, stop: stopRec, error: recError } = useAudioRecorder();
-  
+  const voiceLang = i18n.language === "pt" ? "pt-PT" : i18n.language === "en" ? "en-US" : "es-ES";
+  const wizard = useVoiceRecorder(voiceLang);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardBusy, setWizardBusy] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
 
   useEffect(() => {
-    if (!recording) {
+    if (!wizard.recording) {
       setElapsedSec(0);
       return;
     }
@@ -76,12 +74,16 @@ export default function PigeonEdit() {
       setElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
     }, 500);
     return () => clearInterval(timer);
-  }, [recording]);
+  }, [wizard.recording]);
 
   async function startWizard() {
     setWizardOpen(true);
     try {
-      await startRec();
+      await wizard.start({
+        onAutoStop: () => {
+          stopWizardAndApply();
+        },
+      });
     } catch (e: any) {
       toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
       setWizardOpen(false);
@@ -89,24 +91,17 @@ export default function PigeonEdit() {
   }
 
   async function stopWizardAndApply() {
-    let blob: Blob;
-    try {
-      blob = await stopRec();
-    } catch (e) {
-      setWizardOpen(false);
+    const res = await wizard.stop();
+    setWizardOpen(false);
+    
+    const text = res.transcript;
+    if (!text) {
+      toast.message(t("pigeon_edit.voice_no_voice"));
       return;
     }
 
     setWizardBusy(true);
-    let text = "";
     try {
-      text = await transcribe(blob);
-      if (!text) {
-        toast.message(t("pigeon_edit.voice_no_voice"));
-        setWizardOpen(false);
-        return;
-      }
-      setWizardOpen(false);
       const { data, error } = await supabase.functions.invoke("parse-pigeon", {
         body: { 
           transcript: text,
@@ -115,6 +110,7 @@ export default function PigeonEdit() {
       });
       if (error) throw error;
       const parsed = (data?.fields ?? {}) as Partial<Pigeon>;
+
       setForm((f) => ({
         ...f,
         name: parsed.name?.toString().trim() || f.name,
@@ -133,6 +129,7 @@ export default function PigeonEdit() {
             ? `${f.notes}\n${text}`
             : text,
       }));
+
       const filled = Object.keys(parsed).length;
       if (filled === 0) {
         toast.message(t("pigeon_edit.voice_no_fields"));
@@ -142,9 +139,7 @@ export default function PigeonEdit() {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || t("pigeon_edit.voice_process_error"));
-      if (text) {
-        setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
-      }
+      setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
     } finally {
       setWizardBusy(false);
     }
@@ -187,68 +182,62 @@ export default function PigeonEdit() {
       </div>
 
       {/* Voice assistant card */}
-      <Card className="border-primary/30 bg-primary/5">
-        <CardContent className="pt-6 space-y-3">
-          <div className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold">{t("pigeon_edit.voice_title")}</h2>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {t("pigeon_edit.voice_desc")}
-          </p>
-
-          {wizardOpen && recording && (
-            <div className="rounded-md bg-background border p-3 text-sm">
-              <p>
-                <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-destructive align-middle" />
-                {t("voice_input.recording")}...
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-                {formatTime(elapsedSec)}
-              </p>
+      {isNew && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold">{t("pigeon_edit.voice_title")}</h2>
             </div>
-          )}
-          {(recError || status === "error") && (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
-              {recError || t("voice_input.error_generic")}
+            <p className="text-sm text-muted-foreground">
+              {t("pigeon_edit.voice_desc")}
             </p>
-          )}
 
-          <div>
-            {!recording ? (
-              <Button
-                type="button"
-                onClick={startWizard}
-                disabled={wizardBusy || transcribing || status === "loading"}
-                className="gap-2"
-              >
-                {status === "loading" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> 
-                    {t("pigeon_edit.voice_processing")} ({Math.round(loadingProgress)}%)
-                  </>
-                ) : transcribing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> {t("voice_input.transcribing")}...
-                  </>
-                ) : wizardBusy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> {t("pigeon_edit.voice_processing")} (IA)
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-4 w-4" /> {t("pigeon_edit.voice_start")}
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button type="button" variant="destructive" onClick={stopWizardAndApply} className="gap-2">
-                <Square className="h-4 w-4" /> {t("pigeon_edit.voice_stop")}
-              </Button>
+            {wizardOpen && wizard.recording && (
+              <div className="rounded-md bg-background border p-3 text-sm">
+                <p>
+                  <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-destructive align-middle" />
+                  {wizard.finalText}{" "}
+                  <span className="text-muted-foreground">{wizard.interim}</span>
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+                  {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} (máx)
+                </p>
+              </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+            {wizard.error && !wizard.recording && (
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
+                {wizard.error}
+              </p>
+            )}
+
+            <div>
+              {!wizard.recording ? (
+                <Button
+                  type="button"
+                  onClick={startWizard}
+                  disabled={wizardBusy}
+                  className="gap-2"
+                >
+                  {wizardBusy ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> {t("pigeon_edit.voice_processing")} (IA)
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-4 w-4" /> {t("pigeon_edit.voice_start")}
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button type="button" variant="destructive" onClick={stopWizardAndApply} className="gap-2">
+                  <Square className="h-4 w-4" /> {t("pigeon_edit.voice_stop")}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Form */}
       <Card>
@@ -330,12 +319,6 @@ export default function PigeonEdit() {
                 className="min-h-32"
                 placeholder={t("pigeon_edit.notes_placeholder")}
               />
-              <VoiceInput
-                className="mt-1.5"
-                onTranscript={(text) =>
-                  set("notes", form.notes ? `${form.notes} ${text}` : text)
-                }
-              />
             </Field>
           </div>
         </CardContent>
@@ -373,16 +356,16 @@ function formatTime(totalSec: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function PigeonParentSelect({ 
-  sex, 
-  value, 
-  currentId, 
-  onChange 
-}: { 
-  sex: "cock" | "hen"; 
-  value?: string; 
-  currentId?: string; 
-  onChange: (val: string | undefined) => void 
+function PigeonParentSelect({
+  sex,
+  value,
+  currentId,
+  onChange
+}: {
+  sex: "cock" | "hen";
+  value?: string;
+  currentId?: string;
+  onChange: (val: string | undefined) => void
 }) {
   const { t } = useTranslation();
   const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];

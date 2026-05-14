@@ -13,15 +13,31 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    // ── Cross-Origin Isolation headers ───────────────────────────────────────
+    // Required for SharedArrayBuffer, which is used by @huggingface/transformers
+    // WASM backend (Whisper-tiny).  Without these headers the worker will fail
+    // with "SharedArrayBuffer is not defined" on Firefox and some Chrome flags.
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+    dedupe: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "@tanstack/react-query",
+      "@tanstack/query-core",
+    ],
   },
   optimizeDeps: {
+    // Exclude transformers from pre-bundling — it ships its own WASM chunks
     exclude: ["@huggingface/transformers"],
   },
 }));

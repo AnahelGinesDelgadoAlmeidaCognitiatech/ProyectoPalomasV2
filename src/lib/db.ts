@@ -26,6 +26,26 @@ export interface Pigeon {
   notes?: string;
   wins?: number;
   races?: number;
+
+  // Additional detail fields
+  trailBand?: string;
+  family?: string;
+  lastOwner?: string;
+  tags?: string;
+  eyeColor?: string;
+  legColor?: string;
+  markings?: string;
+  
+  // Genetics fields
+  baseColor?: string;
+  carriedColor?: string;
+  patterns?: string;
+  carriedPatterns?: string;
+  spread?: string;
+  dilute?: string;
+  grizzle?: string;
+  recessiveRed?: string;
+
   createdAt: number;
   updatedAt: number;
 }

@@ -196,7 +196,7 @@ export default function Pairs() {
         ]}
         renderItem={(p) => (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">
                   {p.nestBox ? `${t("crud_pages.pairs.nest_prefix")} ${p.nestBox}` : t("pairs.pair", "Pareja")}
@@ -205,7 +205,7 @@ export default function Pairs() {
                   {t(`pairs.status_${p.status}`, p.status)}
                 </Badge>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {calculatedCOI[p.id] !== undefined && (
                   <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
                     COI: {calculatedCOI[p.id].toFixed(2)}%
@@ -213,16 +213,16 @@ export default function Pairs() {
                 )}
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
                   <Calendar className="h-3 w-3" />
-                  {p.startDate || "?"} — {p.endDate || (p.status === "active" ? t("pairs.present", "Presente") : "?")}
+                  <span className="truncate">{p.startDate || "?"} — {p.endDate || (p.status === "active" ? t("pairs.present", "Presente") : "?")}</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 text-sm mt-1">
+            <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 text-sm mt-1">
               {p.cockId ? (
                 <Link 
                   to={`/pigeons/${p.cockId}`} 
-                  className="flex-1 bg-primary/5 p-2 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors group/pigeon"
+                  className="flex-1 min-w-0 bg-primary/5 p-2 rounded-md border border-primary/10 hover:bg-primary/10 transition-colors group/pigeon"
                 >
                   <p className="text-[10px] text-primary/70 uppercase font-bold">{t("pigeon_detail.cock")}</p>
                   <p className="truncate font-medium group-hover/pigeon:text-primary transition-colors">{getPigeonInfo(p.cockId)}</p>
@@ -234,18 +234,18 @@ export default function Pairs() {
                 </div>
               )}
               
-              <div className="flex flex-col items-center gap-1 px-1">
-                <div className="text-muted-foreground text-xs font-bold">×</div>
+              <div className="flex flex-row xs:flex-col items-center justify-center gap-1 px-1">
+                <div className="text-muted-foreground text-xs font-bold hidden xs:block">×</div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 rounded-full hover:bg-primary/20 hover:text-primary"
+                        className="h-7 w-7 rounded-full hover:bg-primary/20 hover:text-primary"
                         onClick={(e) => { e.preventDefault(); handleCalculateCOI(p); }}
                       >
-                        <Dna className="h-3 w-3" />
+                        <Dna className="h-3.5 w-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -258,7 +258,7 @@ export default function Pairs() {
               {p.henId ? (
                 <Link 
                   to={`/pigeons/${p.henId}`} 
-                  className="flex-1 bg-accent/5 p-2 rounded-md border border-accent/10 hover:bg-accent/10 transition-colors group/pigeon"
+                  className="flex-1 min-w-0 bg-accent/5 p-2 rounded-md border border-accent/10 hover:bg-accent/10 transition-colors group/pigeon"
                 >
                   <p className="text-[10px] text-accent/70 uppercase font-bold">{t("pigeon_detail.hen")}</p>
                   <p className="truncate font-medium group-hover/pigeon:text-accent transition-colors">{getPigeonInfo(p.henId)}</p>
@@ -271,7 +271,7 @@ export default function Pairs() {
               )}
             </div>
 
-            {p.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-1 italic">"{p.notes}"</p>}
+            {p.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/20 pt-2 break-words">"{p.notes}"</p>}
           </div>
         )}
       />
