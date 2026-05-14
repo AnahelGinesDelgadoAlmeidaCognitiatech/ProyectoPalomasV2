@@ -216,26 +216,25 @@ export default function PigeonEdit() {
               {t("pigeon_edit.voice_desc")}
             </p>
 
-            {wizardOpen && wizard.recording && (
+            {recorder.recording && (
               <div className="rounded-md bg-background border p-3 text-sm">
-                <p>
-                  <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-destructive align-middle" />
-                  {wizard.finalText}{" "}
-                  <span className="text-muted-foreground">{wizard.interim}</span>
+                <p className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-destructive" />
+                  <span className="text-muted-foreground">{t("pigeon_edit.voice_recording") || "Grabando..."}</span>
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground tabular-nums">
                   {formatTime(elapsedSec)} / {formatTime(MAX_RECORDING_MS / 1000)} (máx)
                 </p>
               </div>
             )}
-            {wizard.error && !wizard.recording && (
+            {recorder.error && !recorder.recording && (
               <p className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
-                {wizard.error}
+                {recorder.error}
               </p>
             )}
 
             <div>
-              {!wizard.recording ? (
+              {!recorder.recording ? (
                 <Button
                   type="button"
                   onClick={startWizard}
