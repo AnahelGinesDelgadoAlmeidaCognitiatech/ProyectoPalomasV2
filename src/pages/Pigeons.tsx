@@ -62,82 +62,82 @@ export default function Pigeons() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t("pigeons.title")}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-3xl font-bold tracking-tight">{t("pigeons.title")}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {t("pigeons.manage_loft", { count: all.length })}
-            {pendingSync > 0 && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs text-warning">
-                <CloudOff className="h-3 w-3" /> {t("pigeons.pending_sync", { count: pendingSync })}
-              </span>
-            )}
           </p>
         </div>
-        <Button asChild className="gap-2 shadow-elegant">
-          <Link to="/pigeons/new"><Plus className="h-4 w-4" /> {t("pigeons.add")}</Link>
-        </Button>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2">
+      {pendingSync > 0 && (
+        <div className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs text-warning bg-warning/10 px-2 py-1 rounded-full">
+          <CloudOff className="h-3 w-3" /> {t("pigeons.pending_sync", { count: pendingSync })}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 min-w-0 overflow-hidden">
           <Tabs value={tab} onValueChange={(v) => {
             setTab(v as typeof tab);
             if (filterId) {
               searchParams.delete("filterId");
               setSearchParams(searchParams);
             }
-          }} className="flex-1 sm:flex-none">
-            <TabsList className="w-full sm:w-auto">
-              <TabsTrigger value="all">{t("pigeons.tab_all")}</TabsTrigger>
-              <TabsTrigger value="breeder">{t("pigeons.tab_breeders")}</TabsTrigger>
-              <TabsTrigger value="racer">{t("pigeons.tab_racers")}</TabsTrigger>
-              <TabsTrigger value="young">{t("pigeons.tab_young")}</TabsTrigger>
-              <TabsTrigger value="lost">{t("pigeons.tab_lost")}</TabsTrigger>
+          }} className="w-full sm:w-auto min-w-0">
+            <TabsList className="w-full justify-start sm:w-auto">
+              <TabsTrigger value="all" className="flex-1 sm:flex-none">{t("pigeons.tab_all")}</TabsTrigger>
+              <TabsTrigger value="breeder" className="flex-1 sm:flex-none">{t("pigeons.tab_breeders")}</TabsTrigger>
+              <TabsTrigger value="racer" className="flex-1 sm:flex-none">{t("pigeons.tab_racers")}</TabsTrigger>
+              <TabsTrigger value="young" className="flex-1 sm:flex-none">{t("pigeons.tab_young")}</TabsTrigger>
+              <TabsTrigger value="lost" className="flex-1 sm:flex-none">{t("pigeons.tab_lost")}</TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {savedFilters.length > 0 && (
-            <Select 
-              value={filterId || ""} 
-              onValueChange={(v) => {
-                if (v === "none") {
-                  searchParams.delete("filterId");
-                } else {
-                  searchParams.set("filterId", v);
-                }
-                setSearchParams(searchParams);
-              }}
-            >
-              <SelectTrigger className="w-[180px] hidden md:flex">
-                <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-                <SelectValue placeholder={t("sidebar.filters")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("pigeons.tab_all")}</SelectItem>
-                {savedFilters.map((f) => (
-                  <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            {savedFilters.length > 0 && (
+              <Select 
+                value={filterId || ""} 
+                onValueChange={(v) => {
+                  if (v === "none") {
+                    searchParams.delete("filterId");
+                  } else {
+                    searchParams.set("filterId", v);
+                  }
+                  setSearchParams(searchParams);
+                }}
+              >
+                <SelectTrigger className="flex-1 sm:w-[150px]">
+                  <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder={t("sidebar.filters")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("pigeons.tab_all")}</SelectItem>
+                  {savedFilters.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
-          {filterId && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => {
-                searchParams.delete("filterId");
-                setSearchParams(searchParams);
-              }}
-              title="Clear Filter"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+            {filterId && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => {
+                  searchParams.delete("filterId");
+                  setSearchParams(searchParams);
+                }}
+                className="shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="relative max-w-xs w-full">
+        <div className="relative w-full md:max-w-[240px] shrink-0">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t("pigeons.search_placeholder")}
@@ -149,7 +149,7 @@ export default function Pigeons() {
                 setSearchParams(searchParams);
               }
             }}
-            className="pl-9"
+            className="pl-9 h-10"
           />
         </div>
       </div>
@@ -161,11 +161,11 @@ export default function Pigeons() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((p) => (
-            <Link key={p.id} to={`/pigeons/${p.id}`} className="group">
-              <Card className="overflow-hidden shadow-soft transition-smooth hover:shadow-card">
-                <div className="aspect-[4/3] overflow-hidden bg-secondary">
+            <Link key={p.id} to={`/pigeons/${p.id}`} className="group block min-w-0">
+              <Card className="overflow-hidden shadow-soft transition-smooth hover:shadow-card flex flex-row items-center h-20 sm:h-auto sm:flex-col min-w-0">
+                <div className="w-20 h-full sm:w-full sm:aspect-[4/3] overflow-hidden bg-secondary shrink-0">
                   {p.image ? (
                     <img
                       src={p.image}
@@ -174,26 +174,26 @@ export default function Pigeons() {
                       className="h-full w-full object-cover transition-smooth group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground text-[10px]">
                       {t("pigeons.no_image")}
                     </div>
                   )}
                 </div>
-                <CardContent className="space-y-2 p-4">
+                <CardContent className="flex-1 flex flex-col justify-center p-2.5 sm:p-4 min-w-0 overflow-hidden">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-mono text-[11px] uppercase text-muted-foreground truncate">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-[10px] sm:text-[11px] uppercase text-muted-foreground truncate leading-tight">
                         {p.ringNumber}
                       </p>
-                      <h3 className="font-semibold truncate">{p.name || "—"}</h3>
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{p.name || "—"}</h3>
                     </div>
-                    <Badge variant="secondary" className={`border-0 capitalize ${statusStyles[p.status]}`}>
+                    <Badge variant="secondary" className={`shrink-0 border-0 capitalize text-[9px] sm:text-[11px] px-1.5 py-0 sm:px-2.5 sm:py-0.5 ${statusStyles[p.status]}`}>
                       {t(`status.${p.status}`)}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{p.color || "—"}</span>
-                    <span>{p.bornYear ?? "—"}</span>
+                  <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground mt-1">
+                    <span className="truncate mr-2">{p.color || "—"}</span>
+                    <span className="shrink-0">{p.bornYear ?? "—"}</span>
                   </div>
                 </CardContent>
               </Card>

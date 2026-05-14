@@ -28,8 +28,6 @@ const groups: Group[] = [
       { titleKey: "sidebar.pedigree_scan", url: "/pedigree-scan", icon: ScanLine, badge: "AI" },
       { titleKey: "sidebar.statistics", url: "/statistics", icon: BarChart3 },
       { titleKey: "sidebar.images", url: "/images", icon: ImageIcon },
-      // { titleKey: "sidebar.public_pigeons", url: "/public", icon: Globe },
-      // { titleKey: "sidebar.transfers", url: "/transfers", icon: ArrowLeftRight },
     ],
   },
   {

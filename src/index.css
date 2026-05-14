@@ -154,16 +154,30 @@ All colors MUST be HSL.
     background: var(--gradient-subtle);
   }
 
-  /* Custom Scrollbar for elegant horizontal scrolling */
-  .scrollbar-elegant::-webkit-scrollbar {
-    height: 4px;
-    width: 4px;
+  /* Premium thin scrollbar - Global */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-  .scrollbar-elegant::-webkit-scrollbar-track {
-    @apply bg-transparent;
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
-  .scrollbar-elegant::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.15);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.35);
+  }
+
+  /* Specific class for total hiding if needed */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   /* Responsive screen height fixes */

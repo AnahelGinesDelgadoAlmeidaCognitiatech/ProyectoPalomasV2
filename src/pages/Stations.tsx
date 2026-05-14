@@ -69,21 +69,14 @@ function StationItem({ station }: { station: Station }) {
       </div>
 
       {hasCoords && (
-        <div className="relative h-24 w-full sm:w-40 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
+        <div className="relative h-24 w-full sm:w-48 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
           <iframe
             title={`Map of ${station.name}`}
             width="100%"
             height="100%"
-            frameBorder="0"
             style={{ border: 0, pointerEvents: "none" }}
-            srcDoc={`
-              <style>body{margin:0;overflow:hidden}iframe{border:0}</style>
-              <iframe 
-                width="100%" 
-                height="100%" 
-                src="https://maps.google.com/maps?q=${station.lat},${station.lng}&z=15&t=k&output=embed">
-              </iframe>
-            `}
+            src={`https://maps.google.com/maps?q=${station.lat},${station.lng}&z=14&t=k&output=embed`}
+            allowFullScreen
           />
         </div>
       )}

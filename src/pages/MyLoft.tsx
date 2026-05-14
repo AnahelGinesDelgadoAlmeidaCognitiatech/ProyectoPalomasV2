@@ -69,24 +69,14 @@ function LoftItem({ loft }: { loft: Loft }) {
       </div>
 
       {hasCoords && (
-        <div className="relative h-24 w-full sm:w-40 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
+        <div className="relative h-24 w-full sm:w-48 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
           <iframe
             title={`Map of ${loft.name}`}
             width="100%"
             height="100%"
-            frameBorder="0"
             style={{ border: 0, pointerEvents: "none" }}
-            src={`https://www.google.com/maps/embed/v1/view?key=NOT_REQUIRED_FOR_SIMPLE_EMBED&center=${loft.lat},${loft.lng}&zoom=15&maptype=satellite`}
-            // Note: Some embed features might require a key, but we can use a simpler version if needed
-            // Falling back to a standard search embed which is more permissive
-            srcDoc={`
-              <style>body{margin:0;overflow:hidden}iframe{border:0}</style>
-              <iframe 
-                width="100%" 
-                height="100%" 
-                src="https://maps.google.com/maps?q=${loft.lat},${loft.lng}&z=15&t=k&output=embed">
-              </iframe>
-            `}
+            src={`https://maps.google.com/maps?q=${loft.lat},${loft.lng}&z=14&t=k&output=embed`}
+            allowFullScreen
           />
         </div>
       )}

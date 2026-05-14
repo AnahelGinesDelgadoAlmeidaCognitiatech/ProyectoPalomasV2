@@ -48,7 +48,7 @@ export function PedigreeTree({ rootId }: { rootId: string }) {
       <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent opacity-0 group-hover/tree:opacity-100 transition-opacity pointer-events-none z-10 md:hidden" />
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent opacity-100 md:hidden pointer-events-none z-10" />
       
-      <div className="w-full overflow-x-auto pb-6 scrollbar-elegant">
+      <div className="w-full overflow-x-auto pb-6">
         <div 
           className="grid gap-4 sm:gap-6 min-h-[400px]" 
           style={{ 

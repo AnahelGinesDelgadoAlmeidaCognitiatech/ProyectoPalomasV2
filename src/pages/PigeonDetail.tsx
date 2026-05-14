@@ -708,9 +708,9 @@ function InfoCard({ title, rows, onEdit }: { title: string; rows: [string, strin
       <CardContent>
         <dl className="divide-y divide-border">
           {rows.map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 py-2 text-sm">
-              <dt className="text-muted-foreground">{k}</dt>
-              <dd className="font-medium text-right capitalize">{v}</dd>
+            <div key={k} className="flex justify-between items-start gap-4 py-2.5 text-sm sm:py-2">
+              <dt className="text-muted-foreground shrink-0 min-w-[100px]">{k}</dt>
+              <dd className="font-medium text-right break-words capitalize">{v || "—"}</dd>
             </div>
           ))}
         </dl>

@@ -44,9 +44,9 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-gradient-subtle">
+      <div className="flex min-h-screen w-full bg-gradient-subtle overflow-x-hidden">
         <AppSidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col min-w-0">
           <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
             <SidebarTrigger className="-ml-1 sm:ml-0" />
             <form onSubmit={submitSearch} className="relative flex-1 max-w-[140px] xs:max-w-xs md:max-w-md mx-1">
@@ -102,12 +102,14 @@ export default function AppLayout() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button asChild size="sm" className="h-9 px-2 sm:px-3 gap-2">
-                <Link to="/pigeons/new">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden md:inline">{t("layout.add_pigeon")}</span>
-                </Link>
-              </Button>
+              {location.pathname.startsWith("/pigeons") && (
+                <Button asChild size="sm" className="h-9 px-2 sm:px-3 gap-2">
+                  <Link to="/pigeons/new">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden md:inline">{t("layout.add_pigeon")}</span>
+                  </Link>
+                </Button>
+              )}
             </div>
           </header>
           <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-8">
