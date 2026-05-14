@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Trash2, Wand2, Mic, Square, Loader2 } from "lucide-react";
-import { VoiceInput } from "@/components/VoiceInput";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,10 @@ import {
 } from "@/components/ui/select";
 
 import { db, enqueueSync, uid, type Pigeon } from "@/lib/db";
-import { useVoiceRecorder, MAX_RECORDING_MS, isSpeechSupported } from "@/hooks/useVoiceRecorder";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { supabase } from "@/integrations/supabase/client";
+
+const MAX_RECORDING_MS = 60_000; // 60s max per dictado
 
 const emptyPigeon = (): Pigeon => ({
   id: uid(),
