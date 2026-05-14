@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { db, seedIfEmpty } from "@/lib/db";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function AppLayout() {
   const navigate = useNavigate();
