@@ -57,16 +57,15 @@ export default function PigeonEdit() {
   const set = <K extends keyof Pigeon>(k: K, v: Pigeon[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // ---------------- Voice wizard ----------------
+  // ---------------- Voice wizard (MediaRecorder + edge function) ----------------
   const { i18n } = useTranslation();
-  const voiceLang = i18n.language === "pt" ? "pt-PT" : i18n.language === "en" ? "en-US" : "es-ES";
-  const wizard = useVoiceRecorder(voiceLang);
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const recorder = useAudioRecorder();
   const [wizardBusy, setWizardBusy] = useState(false);
   const [elapsedSec, setElapsedSec] = useState(0);
+  const autoStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!wizard.recording) {
+    if (!recorder.recording) {
       setElapsedSec(0);
       return;
     }
@@ -75,41 +74,65 @@ export default function PigeonEdit() {
       setElapsedSec(Math.floor((Date.now() - startedAt) / 1000));
     }, 500);
     return () => clearInterval(timer);
-  }, [wizard.recording]);
+  }, [recorder.recording]);
+
+  useEffect(() => () => {
+    if (autoStopRef.current) clearTimeout(autoStopRef.current);
+  }, []);
+
+  function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
 
   async function startWizard() {
-    setWizardOpen(true);
     try {
-      await wizard.start({
-        onAutoStop: () => {
-          stopWizardAndApply();
-        },
-      });
+      await recorder.start();
+      autoStopRef.current = setTimeout(() => {
+        autoStopRef.current = null;
+        stopWizardAndApply();
+      }, MAX_RECORDING_MS);
     } catch (e: any) {
       toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
-      setWizardOpen(false);
     }
   }
 
   async function stopWizardAndApply() {
-    const res = await wizard.stop();
-    setWizardOpen(false);
-    
-    const text = res.transcript;
-    if (!text) {
+    if (autoStopRef.current) {
+      clearTimeout(autoStopRef.current);
+      autoStopRef.current = null;
+    }
+    if (!recorder.recording) return;
+
+    let blob: Blob;
+    try {
+      blob = await recorder.stop();
+    } catch (e: any) {
+      toast.error(e?.message || t("pigeon_edit.voice_mic_error"));
+      return;
+    }
+
+    if (!blob || blob.size < 500) {
       toast.message(t("pigeon_edit.voice_no_voice"));
       return;
     }
 
     setWizardBusy(true);
     try {
+      const dataUrl = await blobToBase64(blob);
       const { data, error } = await supabase.functions.invoke("parse-pigeon", {
-        body: { 
-          transcript: text,
-          language: i18n.language
+        body: {
+          audio: dataUrl,
+          mimeType: blob.type,
+          language: i18n.language,
         },
       });
       if (error) throw error;
+      const text = (data?.transcript ?? "").toString();
       const parsed = (data?.fields ?? {}) as Partial<Pigeon>;
 
       setForm((f) => ({
@@ -127,8 +150,8 @@ export default function PigeonEdit() {
             ? `${f.notes}\n${parsed.notes}`
             : String(parsed.notes)
           : f.notes
-            ? `${f.notes}\n${text}`
-            : text,
+            ? text ? `${f.notes}\n${text}` : f.notes
+            : text || f.notes,
       }));
 
       const filled = Object.keys(parsed).length;
@@ -140,7 +163,6 @@ export default function PigeonEdit() {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || t("pigeon_edit.voice_process_error"));
-      setForm((f) => ({ ...f, notes: f.notes ? `${f.notes}\n${text}` : text }));
     } finally {
       setWizardBusy(false);
     }
