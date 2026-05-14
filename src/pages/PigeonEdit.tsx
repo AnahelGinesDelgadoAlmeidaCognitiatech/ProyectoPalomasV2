@@ -133,22 +133,35 @@ export default function PigeonEdit() {
       });
       if (error) throw error;
       const text = (data?.transcript ?? "").toString();
-      const parsed = (data?.fields ?? {}) as Partial<Pigeon>;
+      const parsed = (data?.fields ?? {}) as Record<string, unknown>;
+
+      const str = (v: unknown) =>
+        v === null || v === undefined ? "" : String(v).trim();
+      const yearNum = (() => {
+        const n = Number(parsed.bornYear);
+        return Number.isFinite(n) && n > 1900 && n < 3000 ? n : undefined;
+      })();
+      const sexVal = parsed.sex === "cock" || parsed.sex === "hen"
+        ? (parsed.sex as Pigeon["sex"])
+        : undefined;
+      const statusVal = ["breeder", "racer", "young", "lost"].includes(String(parsed.status))
+        ? (parsed.status as Pigeon["status"])
+        : undefined;
 
       setForm((f) => ({
         ...f,
-        name: parsed.name?.toString().trim() || f.name,
-        ringNumber: parsed.ringNumber?.toString().trim() || f.ringNumber,
-        sex: (parsed.sex as Pigeon["sex"]) || f.sex,
-        bornYear: typeof parsed.bornYear === "number" ? parsed.bornYear : f.bornYear,
-        color: parsed.color?.toString().trim() || f.color,
-        loft: parsed.loft?.toString().trim() || f.loft,
-        breeder: parsed.breeder?.toString().trim() || f.breeder,
-        status: (parsed.status as Pigeon["status"]) || f.status,
-        notes: parsed.notes
+        name: str(parsed.name) || f.name,
+        ringNumber: str(parsed.ringNumber) || f.ringNumber,
+        sex: sexVal || f.sex,
+        bornYear: yearNum ?? f.bornYear,
+        color: str(parsed.color) || f.color,
+        loft: str(parsed.loft) || f.loft,
+        breeder: str(parsed.breeder) || f.breeder,
+        status: statusVal || f.status,
+        notes: str(parsed.notes)
           ? f.notes
-            ? `${f.notes}\n${parsed.notes}`
-            : String(parsed.notes)
+            ? `${f.notes}\n${str(parsed.notes)}`
+            : str(parsed.notes)
           : f.notes
             ? text ? `${f.notes}\n${text}` : f.notes
             : text || f.notes,
