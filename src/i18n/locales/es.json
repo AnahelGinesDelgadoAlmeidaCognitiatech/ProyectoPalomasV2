@@ -176,7 +176,9 @@
     "tab_lost": "Perdidas",
     "search_placeholder": "Buscar por nombre, anilla, palomar...",
     "empty": "Ninguna paloma coincide con tus filtros.",
-    "no_image": "Sin imagen"
+    "no_image": "Sin imagen",
+    "sort_by_ring": "Ordenar por Anilla",
+    "filtered_by_loft": "Filtrado por Palomar"
   },
   "status": {
     "breeder": "Reproductor",
@@ -479,7 +481,16 @@
       "field_capacity": "Capacidad",
       "field_notes": "Notas",
       "placeholder_name": "Palomar Principal",
-      "birds": "aves"
+      "birds": "aves",
+      "manage_pigeons": "Gestionar",
+      "manage_title": "Gestionar Palomas en {{name}}",
+      "capacity_text": "Capacidad: {{current}} / {{max}}",
+      "pigeons_text": "Palomas: {{current}}",
+      "no_pigeons_system": "No hay palomas en el sistema.",
+      "in_other_loft": "En: {{name}}",
+      "success_assigned": "Palomas asignadas correctamente.",
+      "error_assigned": "Error al asignar palomas.",
+      "max_capacity_reached": "Capacidad máxima ({{max}}) alcanzada."
     },
     "filters": {
       "desc": "Filtros guardados para la lista de palomas.",

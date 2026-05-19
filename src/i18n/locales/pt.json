@@ -176,7 +176,9 @@
     "tab_lost": "Perdidos",
     "search_placeholder": "Procurar por nome, anilha, pombal...",
     "empty": "Nenhum pombo corresponde aos seus filtros.",
-    "no_image": "Sem imagem"
+    "no_image": "Sem imagem",
+    "sort_by_ring": "Ordenar por Anilha",
+    "filtered_by_loft": "Filtrado por Pombal"
   },
   "status": {
     "breeder": "Reprodutor",
@@ -479,7 +481,16 @@
       "field_capacity": "Capacidade",
       "field_notes": "Notas",
       "placeholder_name": "Pombal Principal",
-      "birds": "aves"
+      "birds": "aves",
+      "manage_pigeons": "Gerir",
+      "manage_title": "Gerir Pombos em {{name}}",
+      "capacity_text": "Capacidade: {{current}} / {{max}}",
+      "pigeons_text": "Pombos: {{current}}",
+      "no_pigeons_system": "Não há pombos no sistema.",
+      "in_other_loft": "Em: {{name}}",
+      "success_assigned": "Pombos atribuídos com sucesso.",
+      "error_assigned": "Erro ao atribuir pombos.",
+      "max_capacity_reached": "Capacidade máxima ({{max}}) alcançada."
     },
     "filters": {
       "desc": "Filtros guardados para a lista de pombos.",

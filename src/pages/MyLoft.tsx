@@ -87,7 +87,7 @@ function LoftItem({ loft }: { loft: Loft }) {
           >
             <Link to={`/pigeons?loftId=${loft.id}`}>
               <Bird className="h-3 w-3" />
-              {pigeonCount} Palomas
+              {pigeonCount} {t("sidebar.pigeons")}
             </Link>
           </Button>
 
@@ -147,7 +147,7 @@ function LoftPigeonsManager({ loft }: { loft: Loft; pigeonCount: number }) {
     const next = new Set(selectedIds);
     if (checked) {
       if (max && next.size >= max) {
-        toast.error(`Capacidad máxima (${max}) alcanzada.`);
+        toast.error(t("crud_pages.my_loft.max_capacity_reached", { max }));
         return;
       }
       next.add(pigeonId);
@@ -179,10 +179,10 @@ function LoftPigeonsManager({ loft }: { loft: Loft; pigeonCount: number }) {
         await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
       }
 
-      toast.success("Palomas asignadas correctamente.");
+      toast.success(t("crud_pages.my_loft.success_assigned"));
       setOpen(false);
     } catch (e) {
-      toast.error("Error al asignar palomas.");
+      toast.error(t("crud_pages.my_loft.error_assigned"));
     }
   };
 
@@ -195,18 +195,18 @@ function LoftPigeonsManager({ loft }: { loft: Loft; pigeonCount: number }) {
           className="h-8 gap-1.5 text-[10px] uppercase tracking-wider font-bold"
         >
           <Settings2 className="h-3 w-3" />
-          Gestionar
+          {t("crud_pages.my_loft.manage_pigeons")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Gestionar Palomas en {loft.name}</DialogTitle>
+          <DialogTitle>{t("crud_pages.my_loft.manage_title", { name: loft.name })}</DialogTitle>
           <p className="text-xs text-muted-foreground">
-            {max ? `Capacidad: ${currentCount} / ${max}` : `Palomas: ${currentCount}`}
+            {max ? t("crud_pages.my_loft.capacity_text", { current: currentCount, max }) : t("crud_pages.my_loft.pigeons_text", { current: currentCount })}
           </p>
         </DialogHeader>
         <ScrollArea className="h-[300px] rounded-md border p-2 bg-background/50">
-          {allPigeons.length === 0 && <p className="text-sm text-muted-foreground p-2">No hay palomas en el sistema.</p>}
+          {allPigeons.length === 0 && <p className="text-sm text-muted-foreground p-2">{t("crud_pages.my_loft.no_pigeons_system")}</p>}
           <div className="grid gap-2 sm:grid-cols-2">
             {allPigeons.map(p => {
               const otherLoftName = assignedElsewhere.get(p.id);
@@ -235,7 +235,7 @@ function LoftPigeonsManager({ loft }: { loft: Loft; pigeonCount: number }) {
                     <span className="text-[10px] text-muted-foreground font-mono ml-1">{p.ringNumber}</span>
                     {isDisabled && (
                       <span className="block text-[9px] text-destructive font-bold uppercase mt-0.5">
-                        En: {otherLoftName}
+                        {t("crud_pages.my_loft.in_other_loft", { name: otherLoftName })}
                       </span>
                     )}
                   </label>
@@ -245,8 +245,8 @@ function LoftPigeonsManager({ loft }: { loft: Loft; pigeonCount: number }) {
           </div>
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSave}>Guardar Cambios</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+          <Button onClick={handleSave}>{t("common.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

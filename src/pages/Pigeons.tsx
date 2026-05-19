@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, CloudOff, Filter, X } from "lucide-react";
+import { Search, Plus, CloudOff, Filter, X, ArrowDownAZ, ArrowUpZA } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { db, seedIfEmpty, type Status, type SavedFilter } from "@/lib/db";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,6 +25,7 @@ export default function Pigeons() {
   const loftId = searchParams.get("loftId");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | Status>("all");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const { t } = useTranslation();
 
   const savedFilters = useLiveQuery(() => db.filters.where("module").equals("pigeons").toArray()) ?? [];
@@ -49,7 +50,7 @@ export default function Pigeons() {
   ) ?? 0;
 
   const filtered = useMemo(() => {
-    return all.filter((p) => {
+    let result = all.filter((p) => {
       const matchTab = tab === "all" || p.status === tab;
       const matchLoft = !loftId || p.loft === loftId;
       const needle = q.toLowerCase();
@@ -60,7 +61,22 @@ export default function Pigeons() {
         p.loft.toLowerCase().includes(needle);
       return matchTab && matchLoft && matchQ;
     });
-  }, [all, q, tab, loftId]);
+
+    if (tab === "all") {
+      const STATUS_ORDER = { breeder: 1, racer: 2, young: 3, lost: 4 };
+      const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      
+      result.sort((a, b) => {
+        const statusDiff = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        if (statusDiff !== 0) return statusDiff;
+        
+        const ringDiff = collator.compare(a.ringNumber || "", b.ringNumber || "");
+        return sortDir === "asc" ? ringDiff : -ringDiff;
+      });
+    }
+
+    return result;
+  }, [all, q, tab, loftId, sortDir]);
 
   return (
     <div className="space-y-6">
@@ -158,6 +174,18 @@ export default function Pigeons() {
                 <X className="h-4 w-4" />
               </Button>
             )}
+
+            {tab === "all" && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSortDir(d => d === "asc" ? "desc" : "asc")}
+                className="h-11 w-11 sm:h-10 sm:w-10 shrink-0"
+                title={t("pigeons.sort_by_ring")}
+              >
+                {sortDir === "asc" ? <ArrowDownAZ className="h-4 w-4" /> : <ArrowUpZA className="h-4 w-4" />}
+              </Button>
+            )}
           </div>
 
           {loftId && (
@@ -171,7 +199,7 @@ export default function Pigeons() {
                 }}
                 className="h-11 sm:h-10 px-3 w-full justify-between"
               >
-                <span>Filtrado por Palomar</span>
+                <span>{t("pigeons.filtered_by_loft")}</span>
                 <X className="h-4 w-4 ml-2" />
               </Button>
             </div>

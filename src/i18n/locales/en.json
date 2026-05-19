@@ -176,7 +176,9 @@
     "tab_lost": "Lost",
     "search_placeholder": "Search by name, band, loft...",
     "empty": "No pigeons match your filters.",
-    "no_image": "No image"
+    "no_image": "No image",
+    "sort_by_ring": "Sort by Ring",
+    "filtered_by_loft": "Filtered by Loft"
   },
   "status": {
     "breeder": "Breeder",
@@ -479,7 +481,16 @@
       "field_capacity": "Capacity",
       "field_notes": "Notes",
       "placeholder_name": "Main Loft",
-      "birds": "birds"
+      "birds": "birds",
+      "manage_pigeons": "Manage",
+      "manage_title": "Manage Pigeons in {{name}}",
+      "capacity_text": "Capacity: {{current}} / {{max}}",
+      "pigeons_text": "Pigeons: {{current}}",
+      "no_pigeons_system": "No pigeons in the system.",
+      "in_other_loft": "In: {{name}}",
+      "success_assigned": "Pigeons assigned successfully.",
+      "error_assigned": "Error assigning pigeons.",
+      "max_capacity_reached": "Maximum capacity ({{max}}) reached."
     },
     "filters": {
       "desc": "Saved filters for the pigeon list.",

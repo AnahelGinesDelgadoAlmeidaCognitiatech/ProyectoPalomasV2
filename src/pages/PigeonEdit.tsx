@@ -341,7 +341,7 @@ export default function PigeonEdit() {
           </Field>
 
           <Field label={t("pigeon_edit.field_loft")}>
-            <LoftSelect value={form.loft} onChange={(val) => set("loft", val)} />
+            <LoftSelect value={form.loft} currentId={id} onChange={(val) => set("loft", val)} />
           </Field>
           <Field label={t("pigeon_edit.field_breeder")}>
             <Input value={form.breeder} onChange={(e) => set("breeder", e.target.value)} placeholder="Van der Berg" />
@@ -445,13 +445,16 @@ function PigeonParentSelect({
 
 function LoftSelect({
   value,
+  currentId,
   onChange
 }: {
   value?: string;
+  currentId?: string;
   onChange: (val: string) => void
 }) {
   const { t } = useTranslation();
   const allLofts = useLiveQuery(() => db.lofts.toArray(), []) ?? [];
+  const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
 
   return (
     <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
@@ -460,11 +463,18 @@ function LoftSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="none">{t("pedigree_tree.unknown")}</SelectItem>
-        {allLofts.map((l) => (
-          <SelectItem key={l.id} value={l.id}>
-            {l.name}
-          </SelectItem>
-        ))}
+        {allLofts.map((l) => {
+          const count = allPigeons.filter(p => (p.loft === l.id || p.loft === l.name) && p.id !== currentId).length;
+          const isFull = l.capacity !== undefined && l.capacity > 0 && count >= l.capacity;
+          const isSelected = value === l.id;
+          const isDisabled = isFull && !isSelected;
+
+          return (
+            <SelectItem key={l.id} value={l.id} disabled={isDisabled}>
+              {l.name} {l.capacity ? `(${count}/${l.capacity})` : ""}
+            </SelectItem>
+          );
+        })}
       </SelectContent>
     </Select>
   );
