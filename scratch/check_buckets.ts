@@ -1,5 +1,5 @@
 
-import { supabase } from "./src/integrations/supabase/client";
+import { supabase } from "../src/supabaseClient.js";
 
 async function checkBuckets() {
   const { data, error } = await supabase.storage.listBuckets();

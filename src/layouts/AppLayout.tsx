@@ -1,12 +1,12 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, Bell, CloudOff, Check, User, LogOut, Settings } from "lucide-react";
+import { Search, Plus, Bell, CloudOff, Check, User, LogOut, Settings, RefreshCw } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -15,15 +15,44 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { db, seedIfEmpty } from "@/lib/db";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAuth } from "@/contexts/AuthContext";
+import { drainSyncQueue, pullFromSupabase } from "@/lib/syncWorker";
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [syncing, setSyncing] = useState(false);
   const { t } = useTranslation();
   const { user, signOut } = useAuth();
-
+  const pulledRef = useRef(false);
 
   useEffect(() => { seedIfEmpty(); }, []);
+
+  // Pull data from Supabase once per session when user logs in
+  useEffect(() => {
+    if (user && !user.id.startsWith("mock") && !pulledRef.current) {
+      pulledRef.current = true;
+      pullFromSupabase();
+    }
+  }, [user]);
+
+  // Drain queue every 30 seconds automatically
+  useEffect(() => {
+    const drain = () => drainSyncQueue();
+    drain(); // immediate on mount
+    const interval = setInterval(drain, 30_000);
+    window.addEventListener("online", drain);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("online", drain);
+    };
+  }, []);
+
+  // Manual sync handler
+  const handleManualSync = async () => {
+    setSyncing(true);
+    await drainSyncQueue();
+    setSyncing(false);
+  };
 
   const pending = useLiveQuery(() => db.syncQueue.filter((i) => !i.syncedAt).count(), []) ?? 0;
   const matches = useLiveQuery(async () => {
@@ -102,9 +131,10 @@ export default function AppLayout() {
                   <DropdownMenuLabel className="text-xs sm:text-sm">{t("layout.notifications")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {pending > 0 ? (
-                    <DropdownMenuItem className="gap-2 text-xs sm:text-sm">
+                    <DropdownMenuItem className="gap-2 text-xs sm:text-sm" onClick={handleManualSync}>
                       <CloudOff className="h-4 w-4 text-warning" />
                       <span>{t("layout.pending_changes", { count: pending })}</span>
+                      <RefreshCw className={`h-3 w-3 ml-auto ${syncing ? "animate-spin" : ""}`} />
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem className="gap-2 text-muted-foreground text-xs sm:text-sm">
