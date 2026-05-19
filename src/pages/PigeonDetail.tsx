@@ -23,6 +23,7 @@ export default function PigeonDetail() {
   const pigeonId = id;
   const pigeon = useLiveQuery(() => (pigeonId ? db.pigeons.get(pigeonId) : undefined), [pigeonId]);
   const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
+  const allLofts = useLiveQuery(() => db.lofts.toArray(), []) ?? [];
   const { t } = useTranslation();
 
   const [medOpen, setMedOpen] = useState(false);
@@ -85,8 +86,9 @@ export default function PigeonDetail() {
   const parents = allPigeons.filter((p) => p.id === pigeon.fatherId || p.id === pigeon.motherId);
 
   const inbreeding = calculateCOI(pigeon, allPigeons).toFixed(2);
-
   const rating = (pigeon.wins ?? 0) * 8 + 30;
+  
+  const loftName = allLofts.find(l => l.id === pigeon.loft)?.name || pigeon.loft || "—";
 
   async function saveMedication() {
     if (!medForm.name.trim() || !pigeon?.id) return;
@@ -266,7 +268,7 @@ export default function PigeonDetail() {
               <div className="space-y-1">
                 <p className="font-mono text-xs uppercase text-muted-foreground tracking-wider">{pigeon.bornYear} · {pigeon.ringNumber} · {pigeon.sex.toUpperCase()}</p>
                 <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{pigeon.name || "—"}</h1>
-                <p className="text-sm text-muted-foreground">{pigeon.color} · {pigeon.loft}</p>
+                <p className="text-sm text-muted-foreground">{pigeon.color} · {loftName}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="border-0 capitalize bg-primary/10 text-primary px-3 py-1">{t(`status.${pigeon.status}`)}</Badge>
@@ -305,7 +307,7 @@ export default function PigeonDetail() {
           ]} />
           <InfoCard title={t("pigeon_detail.meta_info")} onEdit={() => openSection("meta")} rows={[
             [t("pigeon_edit.field_status"), pigeon.status],
-            [t("pigeon_detail.location"), pigeon.loft],
+            [t("pigeon_detail.location"), loftName],
             [t("pigeon_detail.family"), pigeon.family ?? "—"],
             [t("pigeon_detail.last_owner"), pigeon.lastOwner ?? "—"],
             [t("pigeon_detail.rating"), `${Math.min(rating, 100)}/100`],

@@ -22,6 +22,7 @@ const statusStyles: Record<Status, string> = {
 export default function Pigeons() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filterId = searchParams.get("filterId");
+  const loftId = searchParams.get("loftId");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | Status>("all");
   const { t } = useTranslation();
@@ -50,15 +51,16 @@ export default function Pigeons() {
   const filtered = useMemo(() => {
     return all.filter((p) => {
       const matchTab = tab === "all" || p.status === tab;
+      const matchLoft = !loftId || p.loft === loftId;
       const needle = q.toLowerCase();
       const matchQ =
         !needle ||
         p.name.toLowerCase().includes(needle) ||
         p.ringNumber.toLowerCase().includes(needle) ||
         p.loft.toLowerCase().includes(needle);
-      return matchTab && matchQ;
+      return matchTab && matchLoft && matchQ;
     });
-  }, [all, q, tab]);
+  }, [all, q, tab, loftId]);
 
   return (
     <div className="space-y-6">
@@ -157,6 +159,23 @@ export default function Pigeons() {
               </Button>
             )}
           </div>
+
+          {loftId && (
+            <div className="flex items-center lg:col-span-1">
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={() => {
+                  searchParams.delete("loftId");
+                  setSearchParams(searchParams);
+                }}
+                className="h-11 sm:h-10 px-3 w-full justify-between"
+              >
+                <span>Filtrado por Palomar</span>
+                <X className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

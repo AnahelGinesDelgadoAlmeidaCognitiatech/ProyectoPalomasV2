@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, Trash2, Wand2, Mic, Square, Loader2 } from "lucide-react";
@@ -49,7 +49,13 @@ export default function PigeonEdit() {
   const isNew = !id;
 
   const existing = useLiveQuery(() => (id ? db.pigeons.get(id) : undefined), [id]);
-  const [form, setForm] = useState<Pigeon>(emptyPigeon);
+  const [searchParams] = useSearchParams();
+  const defaultLoft = searchParams.get("loftId") || "";
+
+  const [form, setForm] = useState<Pigeon>(() => ({
+    ...emptyPigeon(),
+    loft: defaultLoft,
+  }));
 
   useEffect(() => {
     if (existing) setForm(existing);
@@ -335,7 +341,7 @@ export default function PigeonEdit() {
           </Field>
 
           <Field label={t("pigeon_edit.field_loft")}>
-            <Input value={form.loft} onChange={(e) => set("loft", e.target.value)} placeholder="Main Loft" />
+            <LoftSelect value={form.loft} onChange={(val) => set("loft", val)} />
           </Field>
           <Field label={t("pigeon_edit.field_breeder")}>
             <Input value={form.breeder} onChange={(e) => set("breeder", e.target.value)} placeholder="Van der Berg" />
@@ -430,6 +436,33 @@ function PigeonParentSelect({
         {filtered.map((p) => (
           <SelectItem key={p.id} value={p.id}>
             {p.name || "—"} <span className="text-[10px] text-muted-foreground ml-1">({p.ringNumber})</span>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function LoftSelect({
+  value,
+  onChange
+}: {
+  value?: string;
+  onChange: (val: string) => void
+}) {
+  const { t } = useTranslation();
+  const allLofts = useLiveQuery(() => db.lofts.toArray(), []) ?? [];
+
+  return (
+    <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
+      <SelectTrigger>
+        <SelectValue placeholder={t("pedigree_tree.unknown")} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="none">{t("pedigree_tree.unknown")}</SelectItem>
+        {allLofts.map((l) => (
+          <SelectItem key={l.id} value={l.id}>
+            {l.name}
           </SelectItem>
         ))}
       </SelectContent>

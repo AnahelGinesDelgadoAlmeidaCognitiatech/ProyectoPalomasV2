@@ -19,6 +19,7 @@ export default function Stations() {
         { name: "country", label: t("crud_pages.stations.field_country") },
         { name: "lat", label: t("crud_pages.stations.field_lat"), type: "number", placeholder: "41.3851" },
         { name: "lng", label: t("crud_pages.stations.field_lng"), type: "number", placeholder: "2.1734" },
+        { name: "location_map", label: "Selector Visual", type: "location", full: true },
         { name: "notes", label: t("crud_pages.stations.field_notes"), type: "textarea", full: true },
       ]}
       renderItem={(s) => <StationItem station={s} />}
@@ -69,7 +70,7 @@ function StationItem({ station }: { station: Station }) {
       </div>
 
       {hasCoords && (
-        <div className="relative h-24 w-full sm:w-48 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
+        <div className="relative w-full sm:w-48 shrink-0 overflow-hidden rounded-xl border bg-muted shadow-sm aspect-video">
           <iframe
             title={`Map of ${station.name}`}
             width="100%"
@@ -77,6 +78,9 @@ function StationItem({ station }: { station: Station }) {
             style={{ border: 0, pointerEvents: "none" }}
             src={`https://maps.google.com/maps?q=${station.lat},${station.lng}&z=14&t=k&output=embed`}
             allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            sandbox="allow-scripts allow-same-origin"
           />
         </div>
       )}

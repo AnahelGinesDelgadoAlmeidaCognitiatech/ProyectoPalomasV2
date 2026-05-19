@@ -14,10 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { db, enqueueSync, removeAndSync, uid, type SyncEntity } from "@/lib/db";
 import { VoiceInput } from "@/components/VoiceInput";
+import { LocationPicker } from "@/components/LocationPicker";
 
 export type FieldDef =
   | { name: string; label: string; type?: "text" | "number" | "date"; placeholder?: string; required?: boolean; full?: boolean }
   | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean; voice?: boolean }
+  | { name: string; label: string; type: "location"; full?: boolean }
   | { name: string; label: string; type: "custom"; render: (value: any, onChange: (val: any) => void) => React.ReactNode; full?: boolean };
 
 interface Props<T> {
@@ -128,6 +130,12 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
                           />
                         )}
                       </>
+                    ) : f.type === "location" ? (
+                      <LocationPicker 
+                        lat={editing.lat} 
+                        lng={editing.lng} 
+                        onChange={(lat, lng) => setEditing({ ...editing, lat, lng })} 
+                      />
                     ) : f.type === "custom" ? (
                       f.render(editing[f.name], (val) => setEditing({ ...editing, [f.name]: val }))
                     ) : (
