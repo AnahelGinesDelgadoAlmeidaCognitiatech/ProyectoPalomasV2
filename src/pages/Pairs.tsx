@@ -1,4 +1,4 @@
-import { Heart, Calendar, ArrowLeft, Dna, Info } from "lucide-react";
+import { Heart, Calendar, ArrowLeft, Dna, Info, Egg } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLiveQuery } from "dexie-react-hooks";
