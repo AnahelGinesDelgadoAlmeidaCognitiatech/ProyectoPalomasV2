@@ -17,7 +17,7 @@ import { VoiceInput } from "@/components/VoiceInput";
 
 export type FieldDef =
   | { name: string; label: string; type?: "text" | "number" | "date"; placeholder?: string; required?: boolean; full?: boolean }
-  | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean }
+  | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean; voice?: boolean }
   | { name: string; label: string; type: "custom"; render: (value: any, onChange: (val: any) => void) => React.ReactNode; full?: boolean };
 
 interface Props<T> {
@@ -115,16 +115,18 @@ export function CrudPage<T extends { id: string; createdAt: number; updatedAt: n
                            onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })}
                            placeholder={f.placeholder}
                          />
-                        <VoiceInput
-                          className="mt-1.5"
-                          showControls={true}
-                          onTranscript={(text) =>
-                            setEditing((prev: any) => ({
-                              ...prev,
-                              [f.name]: prev[f.name] ? `${prev[f.name]} ${text}` : text,
-                            }))
-                          }
-                        />
+                        {f.voice && (
+                          <VoiceInput
+                            className="mt-1.5"
+                            showControls={true}
+                            onTranscript={(text) =>
+                              setEditing((prev: any) => ({
+                                ...prev,
+                                [f.name]: prev[f.name] ? `${prev[f.name]} ${text}` : text,
+                              }))
+                            }
+                          />
+                        )}
                       </>
                     ) : f.type === "custom" ? (
                       f.render(editing[f.name], (val) => setEditing({ ...editing, [f.name]: val }))
