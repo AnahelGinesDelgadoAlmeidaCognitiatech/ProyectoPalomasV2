@@ -203,7 +203,37 @@ export default function PigeonDetail() {
     toast.success(t("crud.deleted"));
   }
 
-  return (
+  const MAX_GALLERY = 4;
+  const gallery = pigeon.images ?? [];
+
+  async function addGalleryImage(url: string) {
+    if (!pigeon?.id) return;
+    const next = [...(pigeon.images ?? []), url].slice(0, MAX_GALLERY);
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("pigeon_detail.photo_added", "Foto añadida"));
+  }
+
+  async function removeGalleryImage(index: number) {
+    if (!pigeon?.id) return;
+    if (!confirm(t("crud.delete_confirm"))) return;
+    const next = (pigeon.images ?? []).filter((_, i) => i !== index);
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("crud.deleted"));
+  }
+
+  async function replaceGalleryImage(index: number, url: string) {
+    if (!pigeon?.id) return;
+    const next = [...(pigeon.images ?? [])];
+    next[index] = url;
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("crud.saved"));
+  }
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
