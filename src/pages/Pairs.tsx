@@ -280,9 +280,19 @@ export default function Pairs() {
               )}
             </div>
 
+            {p.breedingRecommendation && (
+              <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-xs">
+                <p className="font-semibold text-primary text-[10px] uppercase tracking-wide flex items-center gap-1">
+                  <Info className="h-3 w-3" /> {t("pairs.breeding_recommendation", "Recomendación para descendencia")}
+                </p>
+                <p className="mt-1 break-words whitespace-pre-wrap">{p.breedingRecommendation}</p>
+              </div>
+            )}
+
             {p.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/20 pt-2 break-words">"{p.notes}"</p>}
           </div>
-        )}
+          );
+        }}
       />
     </div>
   );
