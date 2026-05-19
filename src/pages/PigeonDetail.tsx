@@ -234,6 +234,8 @@ export default function PigeonDetail() {
     await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
     toast.success(t("crud.saved"));
   }
+
+  return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
