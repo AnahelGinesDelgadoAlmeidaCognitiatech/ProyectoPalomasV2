@@ -39,6 +39,7 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthGuard } from "./components/AuthGuard";
 import Auth from "./pages/Auth";
+import DebugDB from "./pages/DebugDB";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/debug-db" element={<DebugDB />} />
                 
                 <Route element={<AuthGuard />}>
                   <Route element={<AppLayout />}>

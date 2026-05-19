@@ -64,9 +64,16 @@ export function useVoiceRecorder(lang = "es-ES") {
       startTimeRef.current = Date.now();
       onAutoStopRef.current = opts?.onAutoStop ?? null;
 
+      // ── Secure context check ─────────────────────────────────────────────
+      if (!window.isSecureContext) {
+        const msg = "El micrófono requiere HTTPS. Accede desde la URL https:// de tu sitio o usa localhost.";
+        setError(msg);
+        throw new Error(msg);
+      }
+
       const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!Ctor) {
-        const msg = "This browser does not support speech recognition.";
+        const msg = "Este navegador no soporta reconocimiento de voz.";
         setError(msg);
         throw new Error(msg);
       }
