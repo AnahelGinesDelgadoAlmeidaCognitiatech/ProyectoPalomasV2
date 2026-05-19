@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil, Trash2, Bird } from "lucide-react";
+import { ArrowLeft, MessageSquarePlus, Pill, Trophy, Plus, Pencil, Trash2, Bird, Images as ImagesIcon, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PedigreeTree } from "@/components/PedigreeTree";
+import { ImageUpload } from "@/components/ImageUpload";
 import { db, enqueueSync, uid, type Race, type Medication, type Comment } from "@/lib/db";
 import { calculateCOI } from "@/lib/genetics";
 import { toast } from "sonner";
@@ -202,6 +203,38 @@ export default function PigeonDetail() {
     toast.success(t("crud.deleted"));
   }
 
+  const MAX_GALLERY = 4;
+  const gallery = pigeon.images ?? [];
+
+  async function addGalleryImage(url: string) {
+    if (!pigeon?.id) return;
+    const next = [...(pigeon.images ?? []), url].slice(0, MAX_GALLERY);
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("pigeon_detail.photo_added", "Foto añadida"));
+  }
+
+  async function removeGalleryImage(index: number) {
+    if (!pigeon?.id) return;
+    if (!confirm(t("crud.delete_confirm"))) return;
+    const next = (pigeon.images ?? []).filter((_, i) => i !== index);
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("crud.deleted"));
+  }
+
+  async function replaceGalleryImage(index: number, url: string) {
+    if (!pigeon?.id) return;
+    const next = [...(pigeon.images ?? [])];
+    next[index] = url;
+    const updated = { ...pigeon, images: next, updatedAt: Date.now() };
+    await db.pigeons.put(updated);
+    await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
+    toast.success(t("crud.saved"));
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -254,6 +287,7 @@ export default function PigeonDetail() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 sm:flex-wrap">
           <TabsTrigger value="overview" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_overview")}</TabsTrigger>
+          <TabsTrigger value="photos" className="flex-1 sm:flex-none gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos", "Fotos")}</TabsTrigger>
           <TabsTrigger value="pedigree" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
           <TabsTrigger value="races" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
           <TabsTrigger value="medications" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_medications")}</TabsTrigger>
@@ -448,6 +482,30 @@ export default function PigeonDetail() {
               >
                 {t("pigeon_detail.recalculate")}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="photos" className="mt-6">
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImagesIcon className="h-4 w-4 text-primary" />
+                {t("pigeon_detail.tab_photos", "Fotos")}
+                <Badge variant="outline" className="ml-2 text-[10px]">{gallery.length}/{MAX_GALLERY}</Badge>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {t("pigeon_detail.photos_desc", "Galería adicional (la foto de perfil se gestiona en el modo edición).")}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PhotoGallery
+                images={gallery}
+                max={MAX_GALLERY}
+                onAdd={addGalleryImage}
+                onReplace={replaceGalleryImage}
+                onRemove={removeGalleryImage}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -746,5 +804,115 @@ function RelatedGroup({ title, items }: { title: string; items: { id: string; na
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PhotoGallery({
+  images,
+  max,
+  onAdd,
+  onReplace,
+  onRemove,
+}: {
+  images: string[];
+  max: number;
+  onAdd: (url: string) => void;
+  onReplace: (index: number, url: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const { t } = useTranslation();
+  const [preview, setPreview] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
+  const canAddMore = images.length < max;
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {images.map((url, i) => (
+          <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border bg-secondary">
+            <button
+              type="button"
+              onClick={() => setPreview(url)}
+              className="absolute inset-0 h-full w-full"
+              aria-label={t("pigeon_detail.view_photo", "Ver foto")}
+            >
+              <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+            </button>
+            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                className="h-7 w-7 shadow"
+                onClick={(e) => { e.stopPropagation(); setEditingIndex(i); }}
+                aria-label={t("crud.aria_edit")}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="destructive"
+                className="h-7 w-7 shadow"
+                onClick={(e) => { e.stopPropagation(); onRemove(i); }}
+                aria-label={t("crud.aria_delete")}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        {canAddMore && (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Plus className="h-6 w-6" />
+            <span className="text-xs font-medium">{t("pigeon_detail.add_photo", "Añadir foto")}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Lightbox */}
+      <Dialog open={!!preview} onOpenChange={(v) => !v && setPreview(null)}>
+        <DialogContent className="max-w-3xl p-2">
+          {preview && (
+            <img src={preview} alt="Preview" className="w-full h-auto rounded-md object-contain max-h-[80vh]" />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add dialog */}
+      <Dialog open={adding} onOpenChange={(v) => setAdding(v)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("pigeon_detail.add_photo", "Añadir foto")}</DialogTitle>
+          </DialogHeader>
+          <ImageUpload
+            onUpload={(url) => { onAdd(url); setAdding(false); }}
+            onRemove={() => {}}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Replace dialog */}
+      <Dialog open={editingIndex !== null} onOpenChange={(v) => !v && setEditingIndex(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("pigeon_detail.replace_photo", "Reemplazar foto")}</DialogTitle>
+          </DialogHeader>
+          {editingIndex !== null && (
+            <ImageUpload
+              currentImage={images[editingIndex]}
+              onUpload={(url) => { onReplace(editingIndex, url); setEditingIndex(null); }}
+              onRemove={() => { onRemove(editingIndex); setEditingIndex(null); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
