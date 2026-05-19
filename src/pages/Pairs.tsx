@@ -118,12 +118,27 @@ export default function Pairs() {
           <SelectItem value="none">{t("pairs.none", "Ninguna")}</SelectItem>
           {options.map(p => (
             <SelectItem key={p.id} value={p.id}>
-              {p.ringNumber} {p.name ? `(${p.name})` : ""}
+              <span className="inline-flex items-center gap-1.5">
+                {p.status === "breeder" && (
+                  <Egg className="h-3 w-3 text-primary" aria-label={t("status.breeder")} />
+                )}
+                <span>{p.ringNumber} {p.name ? `(${p.name})` : ""}</span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
     );
+  };
+
+  // Computes whether a pair is currently active based on its date range.
+  const computeActive = (p: { startDate?: string; endDate?: string }) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTs = today.getTime();
+    const start = p.startDate ? new Date(p.startDate).getTime() : -Infinity;
+    const end = p.endDate ? new Date(p.endDate).getTime() : Infinity;
+    return todayTs >= start && todayTs <= end;
   };
 
   const getPigeonInfo = (id?: string) => {
