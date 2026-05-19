@@ -192,20 +192,12 @@ export default function Pairs() {
           { name: "nestBox", label: t("crud_pages.pairs.field_nestbox"), placeholder: "A-12" },
           { name: "startDate", label: t("pairs.start_date", "Fecha Inicio"), type: "date" },
           { name: "endDate", label: t("pairs.end_date", "Fecha Fin"), type: "date" },
-          { 
-            name: "status", 
-            label: t("pigeon_edit.field_status"), 
-            type: "custom", 
-            render: (v, onChange) => (
-              <Select value={v} onValueChange={onChange}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">{t("pairs.status_active", "Activa")}</SelectItem>
-                  <SelectItem value="separated">{t("pairs.status_separated", "Separada")}</SelectItem>
-                  <SelectItem value="resting">{t("pairs.status_resting", "En descanso")}</SelectItem>
-                </SelectContent>
-              </Select>
-            )
+          {
+            name: "breedingRecommendation",
+            label: t("pairs.breeding_recommendation", "Recomendación para descendencia"),
+            type: "textarea",
+            placeholder: t("pairs.breeding_recommendation_ph", "Ej. cruce indicado para mejorar resistencia, evitar repetir si COI > 12%, etc."),
+            full: true,
           },
           { name: "notes", label: t("crud_pages.pairs.field_notes"), type: "textarea", full: true },
         ]}
