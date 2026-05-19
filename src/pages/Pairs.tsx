@@ -201,15 +201,17 @@ export default function Pairs() {
           },
           { name: "notes", label: t("crud_pages.pairs.field_notes"), type: "textarea", full: true },
         ]}
-        renderItem={(p) => (
+        renderItem={(p) => {
+          const isActive = computeActive(p);
+          return (
           <div className="flex flex-col gap-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">
                   {p.nestBox ? `${t("crud_pages.pairs.nest_prefix")} ${p.nestBox}` : t("pairs.pair", "Pareja")}
                 </span>
-                <Badge variant={p.status === "active" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 h-5">
-                  {t(`pairs.status_${p.status}`, p.status)}
+                <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 h-5">
+                  {isActive ? t("pairs.auto_active", "Activa") : t("pairs.auto_inactive", "Inactiva")}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
@@ -220,7 +222,7 @@ export default function Pairs() {
                 )}
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
                   <Calendar className="h-3 w-3" />
-                  <span className="truncate">{p.startDate || "?"} — {p.endDate || (p.status === "active" ? t("pairs.present", "Presente") : "?")}</span>
+                  <span className="truncate">{p.startDate || "?"} — {p.endDate || (isActive ? t("pairs.present", "Presente") : "?")}</span>
                 </div>
               </div>
             </div>
