@@ -287,6 +287,7 @@ export default function PigeonDetail() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 sm:flex-wrap">
           <TabsTrigger value="overview" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_overview")}</TabsTrigger>
+          <TabsTrigger value="photos" className="flex-1 sm:flex-none gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos", "Fotos")}</TabsTrigger>
           <TabsTrigger value="pedigree" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
           <TabsTrigger value="races" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
           <TabsTrigger value="medications" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_medications")}</TabsTrigger>
