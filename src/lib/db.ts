@@ -23,6 +23,8 @@ export interface Pigeon {
   fatherId?: string;
   motherId?: string;
   image?: string;
+  /** Additional gallery images (max 4). The main `image` acts as profile picture. */
+  images?: string[];
   notes?: string;
   wins?: number;
   races?: number;
@@ -59,6 +61,8 @@ export interface Pair {
   startDate?: string; // ISO date
   endDate?: string;   // ISO date
   status: "active" | "separated" | "resting";
+  /** Optional recommendation/notes about expected offspring. */
+  breedingRecommendation?: string;
   notes?: string;
   createdAt: number;
   updatedAt: number;
