@@ -1,4 +1,4 @@
-import { Heart, Calendar, ArrowLeft, Dna, Info } from "lucide-react";
+import { Heart, Calendar, ArrowLeft, Dna, Info, Egg } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -118,12 +118,27 @@ export default function Pairs() {
           <SelectItem value="none">{t("pairs.none", "Ninguna")}</SelectItem>
           {options.map(p => (
             <SelectItem key={p.id} value={p.id}>
-              {p.ringNumber} {p.name ? `(${p.name})` : ""}
+              <span className="inline-flex items-center gap-1.5">
+                {p.status === "breeder" && (
+                  <Egg className="h-3 w-3 text-primary" aria-label={t("status.breeder")} />
+                )}
+                <span>{p.ringNumber} {p.name ? `(${p.name})` : ""}</span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
     );
+  };
+
+  // Computes whether a pair is currently active based on its date range.
+  const computeActive = (p: { startDate?: string; endDate?: string }) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTs = today.getTime();
+    const start = p.startDate ? new Date(p.startDate).getTime() : -Infinity;
+    const end = p.endDate ? new Date(p.endDate).getTime() : Infinity;
+    return todayTs >= start && todayTs <= end;
   };
 
   const getPigeonInfo = (id?: string) => {
@@ -177,32 +192,26 @@ export default function Pairs() {
           { name: "nestBox", label: t("crud_pages.pairs.field_nestbox"), placeholder: "A-12" },
           { name: "startDate", label: t("pairs.start_date", "Fecha Inicio"), type: "date" },
           { name: "endDate", label: t("pairs.end_date", "Fecha Fin"), type: "date" },
-          { 
-            name: "status", 
-            label: t("pigeon_edit.field_status"), 
-            type: "custom", 
-            render: (v, onChange) => (
-              <Select value={v} onValueChange={onChange}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">{t("pairs.status_active", "Activa")}</SelectItem>
-                  <SelectItem value="separated">{t("pairs.status_separated", "Separada")}</SelectItem>
-                  <SelectItem value="resting">{t("pairs.status_resting", "En descanso")}</SelectItem>
-                </SelectContent>
-              </Select>
-            )
+          {
+            name: "breedingRecommendation",
+            label: t("pairs.breeding_recommendation", "Recomendación para descendencia"),
+            type: "textarea",
+            placeholder: t("pairs.breeding_recommendation_ph", "Ej. cruce indicado para mejorar resistencia, evitar repetir si COI > 12%, etc."),
+            full: true,
           },
           { name: "notes", label: t("crud_pages.pairs.field_notes"), type: "textarea", full: true },
         ]}
-        renderItem={(p) => (
+        renderItem={(p) => {
+          const isActive = computeActive(p);
+          return (
           <div className="flex flex-col gap-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">
                   {p.nestBox ? `${t("crud_pages.pairs.nest_prefix")} ${p.nestBox}` : t("pairs.pair", "Pareja")}
                 </span>
-                <Badge variant={p.status === "active" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 h-5">
-                  {t(`pairs.status_${p.status}`, p.status)}
+                <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 h-5">
+                  {isActive ? t("pairs.auto_active", "Activa") : t("pairs.auto_inactive", "Inactiva")}
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
@@ -213,7 +222,7 @@ export default function Pairs() {
                 )}
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
                   <Calendar className="h-3 w-3" />
-                  <span className="truncate">{p.startDate || "?"} — {p.endDate || (p.status === "active" ? t("pairs.present", "Presente") : "?")}</span>
+                  <span className="truncate">{p.startDate || "?"} — {p.endDate || (isActive ? t("pairs.present", "Presente") : "?")}</span>
                 </div>
               </div>
             </div>
@@ -271,9 +280,19 @@ export default function Pairs() {
               )}
             </div>
 
+            {p.breedingRecommendation && (
+              <div className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-xs">
+                <p className="font-semibold text-primary text-[10px] uppercase tracking-wide flex items-center gap-1">
+                  <Info className="h-3 w-3" /> {t("pairs.breeding_recommendation", "Recomendación para descendencia")}
+                </p>
+                <p className="mt-1 break-words whitespace-pre-wrap">{p.breedingRecommendation}</p>
+              </div>
+            )}
+
             {p.notes && <p className="text-xs text-muted-foreground mt-2 line-clamp-2 italic border-t border-border/20 pt-2 break-words">"{p.notes}"</p>}
           </div>
-        )}
+          );
+        }}
       />
     </div>
   );
