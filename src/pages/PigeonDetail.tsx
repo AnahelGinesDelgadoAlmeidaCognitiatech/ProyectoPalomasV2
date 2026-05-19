@@ -486,6 +486,30 @@ export default function PigeonDetail() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="photos" className="mt-6">
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImagesIcon className="h-4 w-4 text-primary" />
+                {t("pigeon_detail.tab_photos", "Fotos")}
+                <Badge variant="outline" className="ml-2 text-[10px]">{gallery.length}/{MAX_GALLERY}</Badge>
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {t("pigeon_detail.photos_desc", "Galería adicional (la foto de perfil se gestiona en el modo edición).")}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <PhotoGallery
+                images={gallery}
+                max={MAX_GALLERY}
+                onAdd={addGalleryImage}
+                onReplace={replaceGalleryImage}
+                onRemove={removeGalleryImage}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="pedigree" className="mt-6">
           <Card className="shadow-card">
             <CardHeader>
