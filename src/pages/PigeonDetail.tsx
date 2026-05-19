@@ -806,3 +806,113 @@ function RelatedGroup({ title, items }: { title: string; items: { id: string; na
     </Card>
   );
 }
+
+function PhotoGallery({
+  images,
+  max,
+  onAdd,
+  onReplace,
+  onRemove,
+}: {
+  images: string[];
+  max: number;
+  onAdd: (url: string) => void;
+  onReplace: (index: number, url: string) => void;
+  onRemove: (index: number) => void;
+}) {
+  const { t } = useTranslation();
+  const [preview, setPreview] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
+  const canAddMore = images.length < max;
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {images.map((url, i) => (
+          <div key={i} className="group relative aspect-square overflow-hidden rounded-lg border bg-secondary">
+            <button
+              type="button"
+              onClick={() => setPreview(url)}
+              className="absolute inset-0 h-full w-full"
+              aria-label={t("pigeon_detail.view_photo", "Ver foto")}
+            >
+              <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+            </button>
+            <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                className="h-7 w-7 shadow"
+                onClick={(e) => { e.stopPropagation(); setEditingIndex(i); }}
+                aria-label={t("crud.aria_edit")}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="destructive"
+                className="h-7 w-7 shadow"
+                onClick={(e) => { e.stopPropagation(); onRemove(i); }}
+                aria-label={t("crud.aria_delete")}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        {canAddMore && (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Plus className="h-6 w-6" />
+            <span className="text-xs font-medium">{t("pigeon_detail.add_photo", "Añadir foto")}</span>
+          </button>
+        )}
+      </div>
+
+      {/* Lightbox */}
+      <Dialog open={!!preview} onOpenChange={(v) => !v && setPreview(null)}>
+        <DialogContent className="max-w-3xl p-2">
+          {preview && (
+            <img src={preview} alt="Preview" className="w-full h-auto rounded-md object-contain max-h-[80vh]" />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add dialog */}
+      <Dialog open={adding} onOpenChange={(v) => setAdding(v)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("pigeon_detail.add_photo", "Añadir foto")}</DialogTitle>
+          </DialogHeader>
+          <ImageUpload
+            onUpload={(url) => { onAdd(url); setAdding(false); }}
+            onRemove={() => {}}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Replace dialog */}
+      <Dialog open={editingIndex !== null} onOpenChange={(v) => !v && setEditingIndex(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("pigeon_detail.replace_photo", "Reemplazar foto")}</DialogTitle>
+          </DialogHeader>
+          {editingIndex !== null && (
+            <ImageUpload
+              currentImage={images[editingIndex]}
+              onUpload={(url) => { onReplace(editingIndex, url); setEditingIndex(null); }}
+              onRemove={() => { onRemove(editingIndex); setEditingIndex(null); }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
