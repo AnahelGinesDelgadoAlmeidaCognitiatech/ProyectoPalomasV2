@@ -57,28 +57,31 @@ function mapPayload(entity: string, raw: any, userId: string): Record<string, an
   // ── Entity-specific field fixes ──────────────────────────────────────────
 
   if (entity === "pigeon") {
-    // loft field in code = UUID (loft_id in Supabase) or legacy name
-    const loftVal = base.loft;
-    if (loftVal && isUUID(loftVal)) {
-      base.loft_id = loftVal;
+      // loft field in code = UUID (loft_id in Supabase) or legacy name
+      const loftVal = base.loft;
+      if (loftVal && isUUID(loftVal)) {
+        base.loft_id = loftVal;
+      }
+      delete base.loft; // Don't send text loft field — use loft_id
+
+      // Rename genealogy fields
+      if (base.father_id !== undefined) base.father_id = base.father_id || null;
+      if (base.mother_id !== undefined) base.mother_id = base.mother_id || null;
+
+      // Keep the main image URL and gallery images in sync.
+      // Supabase `pigeons` has an `images` array column in the current schema.
     }
-    delete base.loft; // Don't send text loft field — use loft_id
-
-    // Rename genealogy fields
-    if (base.father_id !== undefined) base.father_id = base.father_id || null;
-    if (base.mother_id !== undefined) base.mother_id = base.mother_id || null;
-
-    // Remove base64 images from sync (too large for queue)
-    delete base.image;
-    delete base.images;
-  }
-
   if (entity === "pair") {
     // breedingRecommendation → breeding_recommendation (already handled by toSnake)
     // cock_id/hen_id can be null
     if (!base.cock_id) base.cock_id = null;
     if (!base.hen_id)  base.hen_id  = null;
     if (!base.season_id) base.season_id = null;
+  }
+
+  if (entity === "race") {
+    base.station_id = isUUID(base.station_id) ? base.station_id : null;
+    base.team_id    = isUUID(base.team_id)    ? base.team_id    : null;
   }
 
   if (entity === "comment") {

@@ -22,8 +22,12 @@ export interface Pigeon {
   breeder: string;
   fatherId?: string;
   motherId?: string;
+  /** Main profile image URL for Supabase `pigeons.image`. */
   image?: string;
-  /** Additional gallery images (max 4). The main `image` acts as profile picture. */
+  /**
+   * Local-only gallery images (max 4).
+   * Not defined in the current Supabase `pigeons` schema.
+   */
   images?: string[];
   notes?: string;
   wins?: number;
@@ -249,7 +253,7 @@ export interface SyncQueueItem {
 }
 
 // Helper to get the current user ID for DB naming
-const getCurrentUserId = () => {
+export function getCurrentUserId() {
   const mock = localStorage.getItem("pigeondb_mock_user");
   if (mock) return JSON.parse(mock).id;
   // This is a simple way to get the session from localStorage if not using the hook
@@ -259,7 +263,7 @@ const getCurrentUserId = () => {
     return session?.user?.id;
   }
   return "public"; // Fallback
-};
+}
 
 class PigeonDexie extends Dexie {
   pigeons!: Table<Pigeon, string>;
@@ -302,7 +306,27 @@ class PigeonDexie extends Dexie {
   }
 }
 
-export const db = new PigeonDexie(getCurrentUserId());
+export let db = new PigeonDexie("public");
+
+export function initDb(userId?: string) {
+  const nextUserId = userId ?? getCurrentUserId();
+  const nextName = `pigeondb_${nextUserId || "public"}`;
+
+  if (db?.name === nextName && db?.isOpen()) {
+    return db;
+  }
+
+  if (db) {
+    try {
+      db.close();
+    } catch {
+      // ignore close failures
+    }
+  }
+
+  db = new PigeonDexie(nextUserId || "public");
+  return db;
+}
 
 export const uid = () =>
   (crypto as any)?.randomUUID?.() ??

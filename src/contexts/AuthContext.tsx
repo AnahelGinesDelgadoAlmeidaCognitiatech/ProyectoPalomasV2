@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { type User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { initDb } from "@/lib/db";
 
 interface AuthContextType {
   user: User | null;
@@ -18,7 +19,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for mock session first
     const mockUser = localStorage.getItem("pigeondb_mock_user");
     if (mockUser) {
-      setUser(JSON.parse(mockUser));
+      const parsed = JSON.parse(mockUser);
+      initDb(parsed.id);
+      setUser(parsed);
       setLoading(false);
       return;
     }
@@ -26,15 +29,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check active Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        initDb(session.user.id);
         setUser(session.user);
+      } else {
+        initDb("public");
       }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
+        initDb(session.user.id);
         setUser(session.user);
       } else if (!localStorage.getItem("pigeondb_mock_user")) {
+        initDb("public");
         setUser(null);
       }
       setLoading(false);
@@ -48,6 +56,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
   };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading, signOut }}>

@@ -288,13 +288,13 @@ export default function PigeonDetail() {
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 sm:flex-wrap">
-          <TabsTrigger value="overview" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_overview")}</TabsTrigger>
-          <TabsTrigger value="photos" className="flex-1 sm:flex-none gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos", "Fotos")}</TabsTrigger>
-          <TabsTrigger value="pedigree" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
-          <TabsTrigger value="races" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
-          <TabsTrigger value="medications" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_medications")}</TabsTrigger>
-          <TabsTrigger value="comments" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_comments")}</TabsTrigger>
-          <TabsTrigger value="related" className="flex-1 sm:flex-none">{t("pigeon_detail.tab_related")}</TabsTrigger>
+          <TabsTrigger value="overview" className="flex-none sm:flex-1">{t("pigeon_detail.tab_overview")}</TabsTrigger>
+          <TabsTrigger value="photos" className="flex-none sm:flex-1 gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos", "Fotos")}</TabsTrigger>
+          <TabsTrigger value="pedigree" className="flex-none sm:flex-1">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
+          <TabsTrigger value="races" className="flex-none sm:flex-1">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
+          <TabsTrigger value="medications" className="flex-none sm:flex-1">{t("pigeon_detail.tab_medications")}</TabsTrigger>
+          <TabsTrigger value="comments" className="flex-none sm:flex-1">{t("pigeon_detail.tab_comments")}</TabsTrigger>
+          <TabsTrigger value="related" className="flex-none sm:flex-1">{t("pigeon_detail.tab_related")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -757,7 +757,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function InfoCard({ title, rows, onEdit }: { title: string; rows: [string, string][]; onEdit?: () => void }) {
   return (
     <Card className="shadow-soft">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+      <CardHeader className="flex flex-col justify-between gap-2 pb-2 sm:flex-row sm:items-center sm:space-y-0">
         <CardTitle className="text-base">{title}</CardTitle>
         {onEdit && (
           <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={onEdit}>
@@ -768,9 +768,9 @@ function InfoCard({ title, rows, onEdit }: { title: string; rows: [string, strin
       <CardContent>
         <dl className="divide-y divide-border">
           {rows.map(([k, v]) => (
-            <div key={k} className="flex justify-between items-start gap-4 py-2.5 text-sm sm:py-2">
-              <dt className="text-muted-foreground shrink-0 min-w-[100px]">{k}</dt>
-              <dd className="font-medium text-right break-words capitalize">{v || "—"}</dd>
+            <div key={k} className="flex flex-col gap-1 py-2.5 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:py-2">
+              <dt className="text-muted-foreground shrink-0 sm:min-w-[100px]">{k}</dt>
+              <dd className="font-medium break-words capitalize text-left sm:text-right">{v || "—"}</dd>
             </div>
           ))}
         </dl>

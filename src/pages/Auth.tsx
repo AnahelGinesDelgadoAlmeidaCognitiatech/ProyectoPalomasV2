@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Bird, Loader2, Mail, Lock, UserPlus, LogIn, ShieldCheck } from "lucide-react";
@@ -10,13 +10,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Auth() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +47,11 @@ export default function Auth() {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      if (!data?.session) throw new Error(t("auth.login_error") || "No se pudo obtener la sesión");
       toast.success(t("auth.login_success") || "Bienvenido de nuevo");
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error: any) {
       toast.error(error.message || t("auth.login_error"));
     } finally {
@@ -83,7 +92,7 @@ export default function Auth() {
         </div>
 
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 gap-2">
             <TabsTrigger value="login" className="gap-2">
               <LogIn className="h-4 w-4" /> {t("auth.tab_login") || "Entrar"}
             </TabsTrigger>
@@ -120,7 +129,7 @@ export default function Auth() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password-login">{t("auth.password") || "Contraseña"}</Label>
-                      <Button variant="link" className="h-auto p-0 text-xs text-primary" type="button">
+                      <Button variant="link" className="h-auto p-0 text-xs text-primary whitespace-nowrap" type="button">
                         {t("auth.forgot_password") || "¿Olvidaste tu contraseña?"}
                       </Button>
                     </div>
@@ -138,7 +147,7 @@ export default function Auth() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full gap-2 py-6 text-lg font-bold" type="submit" disabled={loading}>
+                  <Button className="w-full gap-2 py-4 text-lg font-bold sm:py-6" type="submit" disabled={loading}>
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
                     {t("auth.btn_login") || "Entrar"}
                   </Button>
@@ -192,7 +201,7 @@ export default function Auth() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full gap-2 py-6 text-lg font-bold" type="submit" disabled={loading}>
+                  <Button className="w-full gap-2 py-4 text-lg font-bold sm:py-6" type="submit" disabled={loading}>
                     {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
                     {t("auth.btn_signup") || "Registrarse"}
                   </Button>

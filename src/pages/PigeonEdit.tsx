@@ -31,6 +31,7 @@ const emptyPigeon = (): Pigeon => ({
   name: "",
   sex: "cock",
   color: "",
+  image: "",
   bornYear: undefined,
   status: "young",
   loft: "",
@@ -38,6 +39,7 @@ const emptyPigeon = (): Pigeon => ({
   notes: "",
   wins: 0,
   races: 0,
+  images: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
@@ -293,6 +295,33 @@ export default function PigeonEdit() {
               onUpload={(url) => set("image", url)}
               onRemove={() => set("image", "")}
             />
+          </div>
+
+          <div className="sm:col-span-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground mb-3 block">
+              {t("pigeon_edit.field_gallery") || "Fotos extra"}
+            </Label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {(form.images ?? []).map((url, index) => (
+                <div key={index} className="relative overflow-hidden rounded-xl border bg-secondary">
+                  <img src={url} alt={`Gallery ${index + 1}`} className="aspect-square h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-sm text-destructive"
+                    onClick={() => set("images", (form.images ?? []).filter((_, i) => i !== index))}
+                  >
+                    {t("crud.delete")}
+                  </button>
+                </div>
+              ))}
+
+              {(form.images ?? []).length < 4 ? (
+                <ImageUpload
+                  onUpload={(url) => set("images", [...(form.images ?? []), url].slice(0, 4))}
+                  onRemove={() => {}}
+                />
+              ) : null}
+            </div>
           </div>
 
           <Field label={t("pigeon_edit.field_name")}>

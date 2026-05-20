@@ -19,8 +19,8 @@ import { LocationPicker } from "@/components/LocationPicker";
 export type FieldDef =
   | { name: string; label: string; type?: "text" | "number" | "date"; placeholder?: string; required?: boolean; full?: boolean }
   | { name: string; label: string; type: "textarea"; placeholder?: string; required?: boolean; full?: boolean; voice?: boolean }
-  | { name: string; label: string; type: "location"; full?: boolean }
-  | { name: string; label: string; type: "custom"; render: (value: any, onChange: (val: any) => void) => React.ReactNode; full?: boolean };
+  | { name: string; label: string; type: "location"; full?: boolean; required?: boolean }
+  | { name: string; label: string; type: "custom"; render: (value: any, onChange: (val: any) => void) => React.ReactNode; full?: boolean; required?: boolean };
 
 interface Props<T> {
   title: string;

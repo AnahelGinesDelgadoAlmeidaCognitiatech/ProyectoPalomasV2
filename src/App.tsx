@@ -38,6 +38,7 @@ import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthGuard } from "./components/AuthGuard";
+import { LanguageProvider } from "./components/LanguageProvider";
 import Auth from "./pages/Auth";
 import DebugDB from "./pages/DebugDB";
 
@@ -50,10 +51,11 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <LanguageProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/debug-db" element={<DebugDB />} />
@@ -112,9 +114,10 @@ const App = () => {
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
   );
 };
 

@@ -13,6 +13,7 @@ export default function Races() {
   const navigate = useNavigate();
 
   const teams = useLiveQuery(() => db.teams.toArray()) || [];
+  const stations = useLiveQuery(() => db.stations.toArray()) || [];
 
   return (
     <CrudPage<Race>
@@ -36,11 +37,12 @@ export default function Races() {
           label: t("crud_pages.races.field_team"),
           type: "custom",
           render: (value, onChange) => (
-            <Select value={value} onValueChange={onChange}>
+            <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
               <SelectTrigger>
                 <SelectValue placeholder={t("crud_pages.races.field_team")} />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">{t("crud_pages.races.no_team", "Sin equipo")}</SelectItem>
                 {teams.map(team => (
                   <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
                 ))}
@@ -48,7 +50,24 @@ export default function Races() {
             </Select>
           )
         },
-        { name: "stationId", label: t("crud_pages.races.field_station"), placeholder: "Barcelona" },
+        {
+          name: "stationId",
+          label: t("crud_pages.races.field_station"),
+          type: "custom",
+          render: (value, onChange) => (
+            <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("crud_pages.races.field_station")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("crud_pages.races.no_station", "Sin estación")}</SelectItem>
+                {stations.map(station => (
+                  <SelectItem key={station.id} value={station.id}>{station.name || station.id}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )
+        },
         { name: "distanceKm", label: t("crud_pages.races.field_distance"), type: "number" },
         { name: "liberationTime", label: t("crud_pages.races.field_time"), placeholder: "08:30" },
         {

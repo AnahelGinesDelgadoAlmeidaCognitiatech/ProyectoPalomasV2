@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { CrudPage } from "@/components/CrudPage";
-import { db, type Pair, type Pigeon } from "@/lib/db";
+import { db, enqueueSync, type Pair, type Pigeon } from "@/lib/db";
 import { calculateHypotheticalCOI } from "@/lib/genetics";
 import { 
   Select, 
@@ -29,9 +29,12 @@ export default function Pairs() {
   
   const allPigeons = useLiveQuery(() => db.pigeons.toArray(), []) ?? [];
   const allPairs = useLiveQuery(() => db.pairs.toArray(), []) ?? [];
+  const availablePairs = useLiveQuery(() => db.pairs.toArray().then((pairs) => pairs.filter((p) => p.seasonId !== seasonId)), [seasonId]) ?? [];
+  const allSeasons = useLiveQuery(() => db.seasons.orderBy("year").reverse().toArray(), []) ?? [];
   const season = useLiveQuery(() => seasonId ? db.seasons.get(seasonId) : undefined, [seasonId]);
 
   const [calculatedCOI, setCalculatedCOI] = useState<Record<string, number>>({});
+  const [selectedPairId, setSelectedPairId] = useState<string>("");
 
   const handleCalculateCOI = (p: Pair) => {
     if (!p.cockId || !p.henId) {
@@ -131,6 +134,42 @@ export default function Pairs() {
     );
   };
 
+  const SeasonSelector = ({ value, onChange }: { value: string, onChange: (v: string) => void }) => {
+    return (
+      <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
+        <SelectTrigger>
+          <SelectValue placeholder={t("pairs.select_season", "Seleccionar temporada")} />
+        </SelectTrigger>
+        <SelectContent>
+          {allSeasons.length === 0 ? (
+            <div className="p-4 text-sm text-muted-foreground">{t("pairs.no_seasons", "Crea una temporada primero")}</div>
+          ) : (
+            <>
+              <SelectItem value="none">{t("pairs.none", "Ninguna")}</SelectItem>
+              {allSeasons.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name} · {s.year}
+                </SelectItem>
+              ))}
+            </>
+          )}
+        </SelectContent>
+      </Select>
+    );
+  };
+
+  const assignExistingPair = async () => {
+    if (!seasonId || !selectedPairId) return;
+    const pair = await db.pairs.get(selectedPairId);
+    if (!pair) return;
+
+    const updatedPair = { ...pair, seasonId, updatedAt: Date.now() };
+    await db.pairs.put(updatedPair);
+    await enqueueSync({ entity: "pair", op: "update", payload: updatedPair });
+    toast.success(t("pairs.assigned_to_season", "Pareja asignada a la temporada"));
+    setSelectedPairId("");
+  };
+
   // Computes whether a pair is currently active based on its date range.
   const computeActive = (p: { startDate?: string; endDate?: string }) => {
     const today = new Date();
@@ -151,11 +190,60 @@ export default function Pairs() {
   return (
     <div className="space-y-4">
       {seasonId && (
-        <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
-          <Link to="/seasons">
-            <ArrowLeft className="h-4 w-4" /> {t("pairs.back_to_seasons", "Volver a temporadas")}
-          </Link>
-        </Button>
+        <>
+          <Button asChild variant="ghost" size="sm" className="gap-2 -ml-2">
+            <Link to="/seasons">
+              <ArrowLeft className="h-4 w-4" /> {t("pairs.back_to_seasons", "Volver a temporadas")}
+            </Link>
+          </Button>
+
+          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold">{t("pairs.assign_existing", "Añadir pareja existente")}</p>
+                <p className="text-xs text-muted-foreground">{t("pairs.assign_existing_desc", "Selecciona una pareja ya creada y asígnala a esta temporada.")}</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end w-full sm:w-auto">
+                <div className="min-w-0 flex-1 sm:flex-none">
+                  <Select value={selectedPairId || "none"} onValueChange={(v) => setSelectedPairId(v === "none" ? "" : v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("pairs.select_pair", "Seleccionar pareja")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("pairs.none", "Ninguna")}</SelectItem>
+                      {availablePairs.length === 0 ? (
+                        <div className="p-4 text-sm text-muted-foreground">
+                          {t("pairs.no_available_pairs", "No hay parejas disponibles para asignar a esta temporada.")}
+                        </div>
+                      ) : (
+                        availablePairs.map((pair) => {
+                          const label = pair.nestBox
+                            ? `${t("crud_pages.pairs.nest_prefix", "Nido")}: ${pair.nestBox}`
+                            : `${getPigeonInfo(pair.cockId)} × ${getPigeonInfo(pair.henId)}`;
+                          const seasonName = pair.seasonId && pair.seasonId !== seasonId
+                            ? allSeasons.find((s) => s.id === pair.seasonId)?.name
+                            : undefined;
+                          return (
+                            <SelectItem key={pair.id} value={pair.id}>
+                              {label}{seasonName ? ` (${seasonName})` : ""}
+                            </SelectItem>
+                          );
+                        })
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  onClick={assignExistingPair}
+                  disabled={!selectedPairId}
+                >
+                  {t("pairs.assign_button", "Asignar a temporada")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       <CrudPage<Pair>
@@ -189,6 +277,13 @@ export default function Pairs() {
             type: "custom", 
             render: (v, onChange) => <PigeonSelector sex="hen" value={v} onChange={onChange} /> 
           },
+          {
+            name: "seasonId",
+            label: t("pairs.season", "Temporada"),
+            type: "custom",
+            required: false,
+            render: (v, onChange) => <SeasonSelector value={v} onChange={onChange} />,
+          },
           { name: "nestBox", label: t("crud_pages.pairs.field_nestbox"), placeholder: "A-12" },
           { name: "startDate", label: t("pairs.start_date", "Fecha Inicio"), type: "date" },
           { name: "endDate", label: t("pairs.end_date", "Fecha Fin"), type: "date" },
@@ -203,8 +298,15 @@ export default function Pairs() {
         ]}
         renderItem={(p) => {
           const isActive = computeActive(p);
+          const seasonLabel = allSeasons.find((s) => s.id === p.seasonId);
           return (
           <div className="flex flex-col gap-1">
+            {seasonLabel ? (
+              <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                <span>{seasonLabel.name} · {seasonLabel.year}</span>
+              </div>
+            ) : null}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm">

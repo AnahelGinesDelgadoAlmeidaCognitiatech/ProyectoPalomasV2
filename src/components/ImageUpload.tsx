@@ -3,6 +3,7 @@ import { Camera, Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { SUPABASE_STORAGE_BUCKET } from "@/integrations/supabase/config";
 import { toast } from "sonner";
 
 interface ImageUploadProps {
@@ -32,24 +33,30 @@ export function ImageUpload({ currentImage, onUpload, onRemove, folder = "pigeon
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).slice(2)}_${Date.now()}.${fileExt}`;
       const filePath = `${folder}/${fileName}`;
+      const bucket = SUPABASE_STORAGE_BUCKET;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from('pigeons')
+        .from(bucket)
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get Public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('pigeons')
+      const { data, error: publicUrlError } = supabase.storage
+        .from(bucket)
         .getPublicUrl(filePath);
 
-      onUpload(publicUrl);
+      if (publicUrlError) throw publicUrlError;
+      if (!data?.publicUrl) throw new Error("Unable to retrieve public URL after upload.");
+
+      onUpload(data.publicUrl);
       toast.success(t("common.upload_success") || "Image uploaded successfully");
     } catch (error: any) {
       console.error('Error uploading image:', error);
-      toast.error(error.message || "Error uploading image");
+      const message = error?.message || "Error uploading image";
+      const bucketMessage = message.includes("Bucket") ? ` (${SUPABASE_STORAGE_BUCKET})` : "";
+      toast.error(`${message}${bucketMessage}`);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
