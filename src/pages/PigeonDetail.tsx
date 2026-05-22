@@ -214,7 +214,7 @@ export default function PigeonDetail() {
     const updated = { ...pigeon, images: next, updatedAt: Date.now() };
     await db.pigeons.put(updated);
     await enqueueSync({ entity: "pigeon", op: "update", payload: updated });
-    toast.success(t("pigeon_detail.photo_added", "Foto añadida"));
+    toast.success(t("pigeon_detail.photo_added"));
   }
 
   async function removeGalleryImage(index: number) {
@@ -289,7 +289,7 @@ export default function PigeonDetail() {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-muted/50 sm:flex-wrap">
           <TabsTrigger value="overview" className="flex-none sm:flex-1">{t("pigeon_detail.tab_overview")}</TabsTrigger>
-          <TabsTrigger value="photos" className="flex-none sm:flex-1 gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos", "Fotos")}</TabsTrigger>
+          <TabsTrigger value="photos" className="flex-none sm:flex-1 gap-1.5"><ImagesIcon className="h-3.5 w-3.5" />{t("pigeon_detail.tab_photos")}</TabsTrigger>
           <TabsTrigger value="pedigree" className="flex-none sm:flex-1">{t("pigeon_detail.tab_pedigree")}</TabsTrigger>
           <TabsTrigger value="races" className="flex-none sm:flex-1">{t("pigeon_detail.tab_race_history")}</TabsTrigger>
           <TabsTrigger value="medications" className="flex-none sm:flex-1">{t("pigeon_detail.tab_medications")}</TabsTrigger>
@@ -493,11 +493,11 @@ export default function PigeonDetail() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <ImagesIcon className="h-4 w-4 text-primary" />
-                {t("pigeon_detail.tab_photos", "Fotos")}
+                {t("pigeon_detail.tab_photos")}
                 <Badge variant="outline" className="ml-2 text-[10px]">{gallery.length}/{MAX_GALLERY}</Badge>
               </CardTitle>
               <p className="text-xs text-muted-foreground">
-                {t("pigeon_detail.photos_desc", "Galería adicional (la foto de perfil se gestiona en el modo edición).")}
+                {t("pigeon_detail.photos_desc")}
               </p>
             </CardHeader>
             <CardContent>
@@ -837,7 +837,7 @@ function PhotoGallery({
               type="button"
               onClick={() => setPreview(url)}
               className="absolute inset-0 h-full w-full"
-              aria-label={t("pigeon_detail.view_photo", "Ver foto")}
+              aria-label={t("pigeon_detail.view_photo")}
             >
               <img src={url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
             </button>
@@ -873,7 +873,7 @@ function PhotoGallery({
             className="aspect-square flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground hover:bg-muted/50 transition-colors"
           >
             <Plus className="h-6 w-6" />
-            <span className="text-xs font-medium">{t("pigeon_detail.add_photo", "Añadir foto")}</span>
+            <span className="text-xs font-medium">{t("pigeon_detail.add_photo")}</span>
           </button>
         )}
       </div>
@@ -891,7 +891,7 @@ function PhotoGallery({
       <Dialog open={adding} onOpenChange={(v) => setAdding(v)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("pigeon_detail.add_photo", "Añadir foto")}</DialogTitle>
+            <DialogTitle>{t("pigeon_detail.add_photo")}</DialogTitle>
           </DialogHeader>
           <ImageUpload
             onUpload={(url) => { onAdd(url); setAdding(false); }}
@@ -904,7 +904,7 @@ function PhotoGallery({
       <Dialog open={editingIndex !== null} onOpenChange={(v) => !v && setEditingIndex(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("pigeon_detail.replace_photo", "Reemplazar foto")}</DialogTitle>
+            <DialogTitle>{t("pigeon_detail.replace_photo")}</DialogTitle>
           </DialogHeader>
           {editingIndex !== null && (
             <ImageUpload

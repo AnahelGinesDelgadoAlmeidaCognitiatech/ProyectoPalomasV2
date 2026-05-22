@@ -202,7 +202,13 @@
     "add_image": "Add image",
     "add_photo": "Add photo",
     "replace_photo": "Replace photo",
+    "tab_photos": "Photos",
+    "photos": "Photo gallery",
+    "no_photos": "No photos yet...",
+    "upload_photo": "Upload photo",
+    "delete_photo": "Delete photo",
     "photo_added": "Photo added",
+    "photo_deleted": "Photo deleted",
     "view_photo": "View photo",
     "photos_desc": "Additional gallery (profile photo is managed in edit mode).",
     "none_recorded": "None recorded",
@@ -448,7 +454,10 @@
       "status_active": "Active",
       "status_inactive": "Inactive",
       "club_number": "Club Number",
-      "combine_name": "Combine/Federation Name"
+      "combine_name": "Combine/Federation Name",
+      "done": "Done",
+      "search_placeholder": "Search pigeon...",
+      "in_team_badge": "In team"
     },
     "stations": {
       "desc": "Liberation stations with coordinates.",

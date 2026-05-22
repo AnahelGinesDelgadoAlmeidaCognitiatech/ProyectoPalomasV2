@@ -33,7 +33,7 @@ export function GeneralSettings() {
   const [dateFormat, setDateFormat] = useSetting<string>("dateFormat", "YYYY-MM-DD");
   const [defaultLoft, setDefaultLoft] = useSetting<string>("defaultLoft", "");
   const [language, setLanguage] = useSetting<string>("language", "es");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
   
   const [passLoading, setPassLoading] = useState(false);
@@ -97,7 +97,14 @@ export function GeneralSettings() {
             </Select>
           </Field>
           <Field label={t("settings.language")}>
-            <Select value={language} onValueChange={setLanguage}>
+            <Select
+              value={language}
+              onValueChange={(v) => {
+                setLanguage(v);
+                i18n.changeLanguage(v);
+                try { localStorage.setItem("pigeondb_lang", v); } catch {}
+              }}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="es">{t("settings.spanish")}</SelectItem>

@@ -202,7 +202,13 @@
     "add_image": "Añadir imagen",
     "add_photo": "Añadir foto",
     "replace_photo": "Reemplazar foto",
+    "tab_photos": "Fotos",
+    "photos": "Galería de fotos",
+    "no_photos": "Aún no hay fotos...",
+    "upload_photo": "Subir foto",
+    "delete_photo": "Eliminar foto",
     "photo_added": "Foto añadida",
+    "photo_deleted": "Foto eliminada",
     "view_photo": "Ver foto",
     "photos_desc": "Galería adicional (la foto de perfil se gestiona en modo edición).",
     "none_recorded": "Ninguno registrado",
@@ -443,7 +449,10 @@
       "dist_calc_desc": "Calcula la distancia o introduce tu propio valor (unidades en millas)",
       "comp_info": "Información de Competición",
       "club_number": "Número del Club",
-      "combine_name": "Nombre de la Federación/Combine"
+      "combine_name": "Nombre de la Federación/Combine",
+      "done": "Hecho",
+      "search_placeholder": "Buscar paloma...",
+      "in_team_badge": "En equipo"
     },
     "stations": {
       "desc": "Estaciones de suelta con coordenadas.",

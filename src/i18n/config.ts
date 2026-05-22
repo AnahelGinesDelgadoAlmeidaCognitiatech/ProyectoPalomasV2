@@ -4,6 +4,10 @@ import enTranslations from "./locales/en.json";
 import esTranslations from "./locales/es.json";
 import ptTranslations from "./locales/pt.json";
 
+const storedLang = (() => {
+  try { return localStorage.getItem("pigeondb_lang") || "es"; } catch { return "es"; }
+})();
+
 i18n
   .use(initReactI18next)
   .init({
@@ -12,10 +16,10 @@ i18n
       es: { translation: esTranslations },
       pt: { translation: ptTranslations },
     },
-    lng: "es", // Idioma por defecto. El LanguageProvider lo actualizará.
+    lng: storedLang,
     fallbackLng: "en",
     interpolation: {
-      escapeValue: false, // React ya previene XSS
+      escapeValue: false,
     },
   });
 

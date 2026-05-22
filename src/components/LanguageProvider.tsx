@@ -14,11 +14,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    // Cuando el valor de Dexie cambia, actualizamos i18next
     if (dbLanguage?.value && typeof dbLanguage.value === "string") {
       if (i18n.language !== dbLanguage.value) {
         i18n.changeLanguage(dbLanguage.value);
       }
+      try { localStorage.setItem("pigeondb_lang", dbLanguage.value); } catch {}
     }
   }, [dbLanguage?.value, i18n]);
 
