@@ -418,7 +418,7 @@
       "race_type": "Race Type",
       "club_name": "Club Name",
       "club_number": "Club Number",
-      "combine_name": "Combine Name",
+      "combine_name": "Combine/Federation Name",
       "dist_info": "Distance Information",
       "release_point": "Release Point",
       "destination_loft": "Destination (Loft)",
@@ -453,8 +453,6 @@
       "field_status": "Status",
       "status_active": "Active",
       "status_inactive": "Inactive",
-      "club_number": "Club Number",
-      "combine_name": "Combine/Federation Name",
       "done": "Done",
       "search_placeholder": "Search pigeon...",
       "in_team_badge": "In team"
