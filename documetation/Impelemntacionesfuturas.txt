@@ -1,0 +1,2 @@
+Implementación de modelo OCR en servidor para poder obtener los pedigrii que se suban.
+Implemnetación de modelo Whisper para poder transcribir audio de forma local (especialmente en dispositivos móviles) para ello el proyecto debería de migrar de Webp a Aplicación.
