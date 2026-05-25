@@ -86,7 +86,9 @@ export default function PigeonDetail() {
   const parents = allPigeons.filter((p) => p.id === pigeon.fatherId || p.id === pigeon.motherId);
 
   const inbreeding = calculateCOI(pigeon, allPigeons).toFixed(2);
-  const rating = (pigeon.wins ?? 0) * 8 + 30;
+  const racesCount = races.length;
+  const winsCount = races.filter(r => r.results?.some(res => res.pigeonId === pigeonId && res.position === 1)).length;
+  const rating = winsCount * 8 + 30;
   
   const loftName = allLofts.find(l => l.id === pigeon.loft)?.name || pigeon.loft || "—";
 
@@ -277,8 +279,8 @@ export default function PigeonDetail() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label={t("pigeon_detail.wins")} value={String(pigeon.wins ?? 0)} />
-              <Stat label={t("pigeon_detail.races")} value={String(pigeon.races ?? 0)} />
+              <Stat label={t("pigeon_detail.wins")} value={String(winsCount)} />
+              <Stat label={t("pigeon_detail.races")} value={String(racesCount)} />
               <Stat label={t("pigeon_detail.children")} value={String(children.length)} />
               <Stat label={t("pigeon_detail.inbreeding")} value={`${inbreeding}%`} />
             </div>
@@ -597,7 +599,13 @@ export default function PigeonDetail() {
                         <td className="py-3 pr-3">{r.totalBirds?.toLocaleString() ?? "—"}</td>
                         <td className="py-3 pr-3">{res?.arrivalTime ?? "—"}</td>
                         <td className="py-3 pr-3">
-                          {res?.position ? <Badge variant="secondary" className="bg-accent/10 text-accent border-0">{res.position}</Badge> : "—"}
+                          {res?.position === 1 ? (
+                            <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-400/50 gap-1">
+                              <Trophy className="h-3 w-3" /> 1
+                            </Badge>
+                          ) : res?.position ? (
+                            <Badge variant="secondary" className="bg-accent/10 text-accent border-0">{res.position}</Badge>
+                          ) : "—"}
                         </td>
                         <td className="py-3 pr-3">{res?.speed ? `${res.speed} m/min` : "—"}</td>
                         <td className="py-3 pr-3 flex items-center justify-end gap-1">

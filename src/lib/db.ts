@@ -112,7 +112,7 @@ export interface Race {
   destOther?: string;
   archived?: boolean;
   notes?: string;
-  results?: { pigeonId: string; arrivalTime?: string; position?: number; speed?: number }[];
+  results?: { pigeonId: string; arrivalTime?: string; position?: number; speed?: number; won?: boolean }[];
   createdAt: number;
   updatedAt: number;
 }

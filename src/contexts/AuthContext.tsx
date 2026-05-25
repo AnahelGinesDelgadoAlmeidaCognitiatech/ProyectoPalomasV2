@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { type User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { initDb } from "@/lib/db";
+import { pullFromSupabase, startAutoSync, stopAutoSync } from "@/lib/syncWorker";
 
 interface AuthContextType {
   user: User | null;
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         initDb(session.user.id);
         setUser(session.user);
+        pullFromSupabase().then(() => startAutoSync());
       } else {
         initDb("public");
       }
@@ -41,7 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         initDb(session.user.id);
         setUser(session.user);
+        pullFromSupabase().then(() => startAutoSync());
       } else if (!localStorage.getItem("pigeondb_mock_user")) {
+        stopAutoSync();
         initDb("public");
         setUser(null);
       }
@@ -52,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    stopAutoSync();
     localStorage.removeItem("pigeondb_mock_user");
     await supabase.auth.signOut();
     setUser(null);

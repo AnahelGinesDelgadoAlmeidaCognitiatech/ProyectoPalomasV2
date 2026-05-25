@@ -92,12 +92,6 @@ function mapPayload(entity: string, raw: any, userId: string): Record<string, an
     delete base.text;
   }
 
-  if (entity === "journal") {
-    // Supabase has `content` column; local uses `body`
-    base.content = base.body;
-    delete base.body;
-  }
-
   if (entity === "setting") {
     // Settings use composite PK (key, user_id) — no id column
     delete base.id;
@@ -138,21 +132,29 @@ export async function drainSyncQueue(): Promise<void> {
 
       try {
         if (item.op === "delete") {
-          const { error } = await (supabase as any)
-            .from(table)
-            .delete()
-            .eq("id", item.payload.id)
-            .eq("user_id", userId);
-
-          if (error) throw error;
+          if (item.entity === "setting") {
+            // Settings PK is (key, user_id), not id
+            const { error } = await (supabase as any)
+              .from(table).delete()
+              .eq("key", item.payload.key).eq("user_id", userId);
+            if (error) throw error;
+          } else {
+            const { error } = await (supabase as any)
+              .from(table).delete()
+              .eq("id", item.payload.id).eq("user_id", userId);
+            if (error) throw error;
+          }
 
         } else {
           // create or update → upsert
           const payload = mapPayload(item.entity, item.payload, userId);
 
+          // Settings use composite PK (key, user_id)
+          const conflict = item.entity === "setting" ? "key,user_id" : "id";
+
           const { error } = await (supabase as any)
             .from(table)
-            .upsert(payload, { onConflict: "id" });
+            .upsert(payload, { onConflict: conflict });
 
           if (error) throw error;
         }
@@ -235,4 +237,22 @@ function snakeToCamel(obj: Record<string, any>): Record<string, any> {
     out[camelKey] = v;
   }
   return out;
+}
+
+// ─── Auto-sync interval ────────────────────────────────────────────────────
+
+let autoSyncTimer: ReturnType<typeof setInterval> | null = null;
+
+/** Starts periodic sync. Runs an immediate drain, then every `intervalMs` ms. */
+export function startAutoSync(intervalMs = 30_000) {
+  stopAutoSync();
+  drainSyncQueue();
+  autoSyncTimer = setInterval(drainSyncQueue, intervalMs);
+  window.addEventListener("online", drainSyncQueue);
+}
+
+/** Stops the periodic sync and removes the online listener. */
+export function stopAutoSync() {
+  if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer = null; }
+  window.removeEventListener("online", drainSyncQueue);
 }

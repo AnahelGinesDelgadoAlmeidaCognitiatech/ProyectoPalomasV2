@@ -123,7 +123,7 @@ export default function RaceDetail() {
     await saveAndSync(db.races, "race", { ...race, pigeonIds: newPigeons }, false);
   };
 
-  const currentResults = race.results || [];
+  const currentResults = [...(race.results || [])].sort((a, b) => (a.position || 999) - (b.position || 999));
   const station = stations.find(s => s.id === race.stationId);
   
   const raceTeam = teams.find(t => t.id === race.teamId);
@@ -167,11 +167,17 @@ export default function RaceDetail() {
       pigeonId: selectedPigeon,
       arrivalTime,
       speed: Number(speed.toFixed(2)),
-      position: 0
+      position: 0,
+      won: false,
     }];
 
-    newResults.sort((a, b) => (b.speed || 0) - (a.speed || 0));
-    newResults.forEach((r, idx) => { r.position = idx + 1; });
+    newResults.sort((a, b) => {
+      const speedDiff = (b.speed || 0) - (a.speed || 0);
+      if (speedDiff !== 0) return speedDiff;
+      if (a.arrivalTime && b.arrivalTime) return a.arrivalTime.localeCompare(b.arrivalTime);
+      return 0;
+    });
+    newResults.forEach((r, idx) => { r.position = idx + 1; r.won = idx === 0; });
 
     await saveAndSync(db.races, "race", { ...race, results: newResults }, false);
     setSelectedPigeon("");
@@ -399,12 +405,12 @@ export default function RaceDetail() {
                 {currentResults.map((res) => {
                   const pigeon = allPigeons?.find(p => p.id === res.pigeonId);
                   return (
-                    <div 
-                      key={res.pigeonId} 
-                      className="group relative flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border bg-card hover:border-primary transition-all shadow-sm"
+                    <div
+                      key={res.pigeonId}
+                      className={`group relative flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border bg-card hover:border-primary transition-all shadow-sm ${res.position === 1 ? "border-yellow-400/60 bg-yellow-500/5" : ""}`}
                     >
-                      <div className="flex-none flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-xl font-black text-primary border-2 border-primary/20">
-                        {res.position}
+                      <div className={`flex-none flex items-center justify-center h-12 w-12 rounded-full text-xl font-black border-2 ${res.position === 1 ? "bg-yellow-500/20 text-yellow-600 border-yellow-400/50" : "bg-primary/10 text-primary border-primary/20"}`}>
+                        {res.position === 1 ? <Trophy className="h-5 w-5" /> : res.position}
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -432,8 +438,13 @@ export default function RaceDetail() {
                         className="absolute top-2 right-2 sm:static opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
                         onClick={async () => {
                           const updated = currentResults.filter(r => r.pigeonId !== res.pigeonId);
-                          updated.sort((a, b) => (b.speed || 0) - (a.speed || 0));
-                          updated.forEach((r, idx) => r.position = idx + 1);
+                          updated.sort((a, b) => {
+                            const speedDiff = (b.speed || 0) - (a.speed || 0);
+                            if (speedDiff !== 0) return speedDiff;
+                            if (a.arrivalTime && b.arrivalTime) return a.arrivalTime.localeCompare(b.arrivalTime);
+                            return 0;
+                          });
+                          updated.forEach((r, idx) => { r.position = idx + 1; r.won = idx === 0; });
                           await saveAndSync(db.races, "race", { ...race, results: updated }, false);
                         }}
                       >
