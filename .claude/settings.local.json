@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Test-Path \"c:\\\\Users\\\\anahe\\\\Desktop\\\\ProyectoPalomas2\\\\ProyectoPalomasV2\\\\src\\\\lib\\\\syncWorker.ts\")"
-    ]
-  }
-}
