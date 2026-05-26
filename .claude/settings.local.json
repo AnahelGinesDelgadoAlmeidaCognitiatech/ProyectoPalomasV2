@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Test-Path \"c:\\\\Users\\\\anahe\\\\Desktop\\\\ProyectoPalomas2\\\\ProyectoPalomasV2\\\\src\\\\lib\\\\syncWorker.ts\")"
+      "Bash(Test-Path \"c:\\\\Users\\\\anahe\\\\Desktop\\\\ProyectoPalomas2\\\\ProyectoPalomasV2\\\\src\\\\lib\\\\syncWorker.ts\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); deps=list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\); print\\('\\\\n'.join\\(deps\\)\\)\")"
     ]
   }
 }
